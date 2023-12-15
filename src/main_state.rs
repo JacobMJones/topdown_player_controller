@@ -3,11 +3,11 @@ use gilrs::{Event, Gilrs, EventType, Axis};
 
 use crate::player::Player;
 
+//Main state is passed context(ctx) from main.rs
 pub struct MainState {
     gilrs: Gilrs,
     player: Player,
 }
-
 impl MainState {
     pub fn new(ctx: &mut Context) -> GameResult<MainState> {
         let gilrs = Gilrs::new().unwrap();
@@ -16,8 +16,6 @@ impl MainState {
         Ok(MainState { gilrs, player })
     }
 }
-
-
 impl event::EventHandler<ggez::GameError> for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
         let dt = ggez::timer::delta(ctx).as_secs_f32();

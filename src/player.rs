@@ -28,7 +28,10 @@ impl Player {
         };
         self.position.x += movement.x;
         self.position.y += movement.y;
-        self.rotation += self.axis_right.0 * ROTATION_SPEED * dt;
+    
+        if self.axis_right.0 != 0.0 || self.axis_right.1 != 0.0 {
+            self.rotation = self.axis_right.1.atan2(self.axis_right.0);
+        }
     }
 
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
