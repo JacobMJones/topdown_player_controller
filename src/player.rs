@@ -1,7 +1,7 @@
 use ggez::{graphics, Context, GameResult};
 use mint;
 
-pub const MOVEMENT_SPEED: f32 = 800.0;
+pub const MOVEMENT_SPEED: f32 = 1500.0;
 pub const ROTATION_SPEED: f32 = 3.0;
 
 pub struct Player {
@@ -12,17 +12,19 @@ pub struct Player {
     pub speed: f32,
     pub acceleration: f32,
     pub max_speed: f32,
+
 }
 
 impl Player {
     pub fn new() -> Self {
+
         Player {
             position: mint::Point2 { x: 400.0, y: 300.0 },
             rotation: 0.0,
             axis_left: (0.0, 0.0),
             axis_right: (0.0, 0.0),
             speed: 0.0,
-            acceleration: 1000.0, // Adjust this value as needed
+            acceleration: 2000.0, // Adjust this value as needed
             max_speed: MOVEMENT_SPEED,
         }
     }
@@ -54,6 +56,12 @@ impl Player {
     }
 
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
+
+        // Define maximum and minimum radii
+        let max_radius = 30.0;  // Larger radius when stationary
+        let min_radius = 27.0;  // Smaller radius at maximum speed
+        let radius_factor = self.speed / self.max_speed;
+        let radius = max_radius - (max_radius - min_radius) * radius_factor;
         // Define white and yellow colors
         let white = graphics::Color::from_rgb(255, 255, 255);
         let yellow = graphics::Color::from_rgb(255, 255, 0);
@@ -74,9 +82,9 @@ impl Player {
             ctx,
             graphics::DrawMode::fill(),
             mint::Point2 { x: 0.0, y: 0.0 },
-            30.0,
+            radius,  // Use the interpolated radius
             2.0,
-            color, // Use the interpolated color
+            color,   // Use the interpolated color
         )?;
     
         graphics::draw(
