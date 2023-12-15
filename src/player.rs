@@ -1,7 +1,7 @@
 use ggez::{graphics, Context, GameResult};
 use mint;
 
-pub const MOVEMENT_SPEED: f32 = 300.0;
+pub const MOVEMENT_SPEED: f32 = 800.0;
 pub const ROTATION_SPEED: f32 = 3.0;
 
 pub struct Player {
@@ -9,6 +9,9 @@ pub struct Player {
     pub rotation: f32,
     pub axis_left: (f32, f32),
     pub axis_right: (f32, f32),
+    pub speed: f32,
+    pub acceleration: f32,
+    pub max_speed: f32,
 }
 
 impl Player {
@@ -18,17 +21,33 @@ impl Player {
             rotation: 0.0,
             axis_left: (0.0, 0.0),
             axis_right: (0.0, 0.0),
+            speed: 0.0,
+            acceleration: 1000.0, // Adjust this value as needed
+            max_speed: MOVEMENT_SPEED,
         }
     }
 
     pub fn update(&mut self, dt: f32) {
+        // Check if there is input on the left axis to start accelerating
+        if self.axis_left.0 != 0.0 || self.axis_left.1 != 0.0 {
+            self.speed += self.acceleration * dt;
+            if self.speed > self.max_speed {
+                self.speed = self.max_speed;
+            }
+        } else {
+            // Decelerate or reset speed when there's no input
+            self.speed = 0.0;
+        }
+    
         let movement = mint::Vector2 { 
-            x: self.axis_left.0 * MOVEMENT_SPEED * dt, 
-            y: self.axis_left.1 * MOVEMENT_SPEED * dt 
+            x: self.axis_left.0 * self.speed * dt, 
+            y: self.axis_left.1 * self.speed * dt 
         };
+    
         self.position.x += movement.x;
         self.position.y += movement.y;
     
+        // Rotation logic (unchanged)
         if self.axis_right.0 != 0.0 || self.axis_right.1 != 0.0 {
             self.rotation = self.axis_right.1.atan2(self.axis_right.0);
         }
