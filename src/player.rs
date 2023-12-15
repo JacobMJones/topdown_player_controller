@@ -2,7 +2,7 @@ use ggez::{graphics, Context, GameResult};
 use mint;
 
 pub const MOVEMENT_SPEED: f32 = 800.0;
-// pub const ROTATION_SPEED: f32 = 3.0;
+pub const ROTATION_SPEED: f32 = 3.0;
 
 pub struct Player {
     pub position: mint::Point2<f32>,
@@ -28,53 +28,57 @@ impl Player {
     }
 
     pub fn update(&mut self, dt: f32) {
-        let axis_input = mint::Vector2 {
-            x: self.axis_left.0,
-            y: self.axis_left.1,
-        };
-
-        let input_magnitude = (axis_input.x.powi(2) + axis_input.y.powi(2)).sqrt();
-
-        // Check if there is input to start accelerating
-        if input_magnitude != 0.0 {
+        // Check if there is input on the left axis to start accelerating
+        if self.axis_left.0 != 0.0 || self.axis_left.1 != 0.0 {
             self.speed += self.acceleration * dt;
             if self.speed > self.max_speed {
                 self.speed = self.max_speed;
             }
-
-            let normalized_input = mint::Vector2 {
-                x: axis_input.x / input_magnitude,
-                y: axis_input.y / input_magnitude,
-            };
-
-            let movement = mint::Vector2 {
-                x: normalized_input.x * self.speed * dt,
-                y: normalized_input.y * self.speed * dt,
-            };
-
-            self.position.x += movement.x;
-            self.position.y += movement.y;
         } else {
             // Decelerate or reset speed when there's no input
             self.speed = 0.0;
         }
     
-
+        let movement = mint::Vector2 { 
+            x: self.axis_left.0 * self.speed * dt, 
+            y: self.axis_left.1 * self.speed * dt 
+        };
+    
+        self.position.x += movement.x;
+        self.position.y += movement.y;
+    
+        // Rotation logic (unchanged)
         if self.axis_right.0 != 0.0 || self.axis_right.1 != 0.0 {
             self.rotation = self.axis_right.1.atan2(self.axis_right.0);
         }
     }
 
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
+        // Define white and yellow colors
+        let white = graphics::Color::from_rgb(255, 255, 255);
+        let yellow = graphics::Color::from_rgb(255, 255, 0);
+    
+        // Calculate the interpolation factor (0.0 when speed is 0, 1.0 when speed is max_speed)
+        let factor = self.speed / self.max_speed;
+    
+        // Interpolate between white and yellow
+        let color = graphics::Color::new(
+            white.r + (yellow.r - white.r) * factor,
+            white.g + (yellow.g - white.g) * factor,
+            white.b + (yellow.b - white.b) * factor,
+            1.0, // Alpha value
+        );
+    
+        // Rest of your drawing code...
         let circle = graphics::Mesh::new_circle(
             ctx,
             graphics::DrawMode::fill(),
             mint::Point2 { x: 0.0, y: 0.0 },
             30.0,
             2.0,
-            graphics::Color::WHITE,
+            color, // Use the interpolated color
         )?;
-
+    
         graphics::draw(
             ctx,
             &circle,
@@ -84,5 +88,6 @@ impl Player {
                 .offset(mint::Point2 { x: 0.5, y: 0.5 }),
         )
     }
+    
 
 }
