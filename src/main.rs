@@ -9,7 +9,7 @@ use main_state::MainState;
 fn main() -> ggez::GameResult {
     let (mut ctx, event_loop) = ContextBuilder::new("top_down_shooter", "author")
         .window_setup(conf::WindowSetup::default().title("Top Down Shooter"))
-        .window_mode(conf::WindowMode::default().dimensions(800.0, 600.0))
+        .window_mode(conf::WindowMode::default().dimensions(1200.0, 1200.0))
         .build()?;
 
     let state = MainState::new(&mut ctx)?;
