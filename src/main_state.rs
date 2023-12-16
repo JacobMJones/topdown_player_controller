@@ -27,7 +27,7 @@ impl MainState {
         // Initialize multiple collectibles with random positions
         let mut collectibles = Vec::new();
         let mut rng = rand::thread_rng(); // Creates a random number generator
-        for _ in 0..500 {
+        for _ in 0..1500 {
             let x = rng.gen_range(50.0..1500.0); 
             let y = rng.gen_range(50.0..1500.0); 
             let initial_time = rng.gen_range(0.0..6.28); // Random time value, for example

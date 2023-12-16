@@ -25,7 +25,18 @@ impl Collectible {
     }
     fn get_pulsating_size(&self) -> f32 {
         let pulsation_factor = 0.5; // Adjust this value for more/less pulsation
-        self.size + self.size * pulsation_factor * self.time.sin()
+        let min_size = 10.0; // Minimum size
+        let max_size = self.size; // Maximum size, based on initial size
+        let mut pulsating_size = self.size + pulsation_factor * self.time.sin();
+
+        // Ensure the size is within the min and max bounds
+        if pulsating_size < min_size {
+            pulsating_size = min_size + (min_size - pulsating_size);
+        } else if pulsating_size > max_size {
+            pulsating_size = max_size - (pulsating_size - max_size);
+        }
+
+        pulsating_size
     }
     fn get_dynamic_color(&self) -> Color {
         let r = (self.time.sin() * 0.5 + 0.5) as f32;
