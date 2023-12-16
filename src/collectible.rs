@@ -6,6 +6,7 @@ pub struct Collectible {
     pub size: f32,
     pub active: bool,
     pub radius: f32,
+
 }
 
 impl Collectible {
@@ -15,6 +16,7 @@ impl Collectible {
             size,
             active: true,
             radius: size/2.0,
+
         }
     }
 
@@ -37,8 +39,8 @@ impl Collectible {
     }
     pub fn bounding_box(&self) -> Rect {
         Rect::new(
-            self.position.x - self.radius,
-            self.position.y - self.radius,
+            self.position.x - self.size / 2.0,
+            self.position.y - self.size / 2.0,
             self.size,
             self.size,
         )

@@ -5,6 +5,7 @@ use crate::collectible::Collectible;
 use ggez::{event, graphics, Context, GameResult};
 use ggez::graphics::Color;
 use gilrs::{Event, EventType, Gilrs, Axis};
+use mint::Point2;
 //Main state is passed context(ctx) from main.rs
 pub struct MainState {
     gilrs: Gilrs,
@@ -57,17 +58,22 @@ impl event::EventHandler<ggez::GameError> for MainState {
                 }
             }
         }
-
         let player_bbox = self.player.bounding_box();
         let mut to_remove = Vec::new();
-
         for (index, collectible) in self.collectibles.iter().enumerate() {
             let collectible_bbox = collectible.bounding_box();
             if check_collision(&player_bbox, &collectible_bbox) {
+
                 // Additional logic for collision
                 if let Some(inactive_effect) = self.flash_effect_pool.iter_mut().find(|e| !e.is_active()) {
+        
+                    
+                    // Create a new Point2, adjust position
+                    let adjusted_position = Point2 { x: collectible.position.x + collectible.size/2.0, y: collectible.position.y + collectible.size/2.0 };
+                    
+                    // Pass the adjusted_position to the activate method
                     inactive_effect.activate(
-                        collectible.position,
+                        adjusted_position,
                         Color::new(1.0, 0.0, 0.0, 1.0), // Red color
                         0.5, // Duration
                     );
@@ -91,7 +97,6 @@ impl event::EventHandler<ggez::GameError> for MainState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         graphics::clear(ctx, graphics::Color::from_rgb(0, 0, 0));
         self.player.draw(ctx)?;
-
         for collectible in &self.collectibles {
             collectible.draw(ctx)?;
         }
@@ -103,6 +108,4 @@ impl event::EventHandler<ggez::GameError> for MainState {
         }
         graphics::present(ctx)
     }
-    
-
 }
