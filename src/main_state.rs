@@ -30,7 +30,9 @@ impl MainState {
         for _ in 0..500 {
             let x = rng.gen_range(50.0..1500.0); 
             let y = rng.gen_range(50.0..1500.0); 
-            collectibles.push(Collectible::new(x, y,30.0)); 
+            let initial_time = rng.gen_range(0.0..6.28); // Random time value, for example
+
+            collectibles.push(Collectible::new(x, y,30.0, initial_time)); 
         }
 
         //Initialize multiple flash effects and put them into a pool
@@ -74,7 +76,11 @@ impl event::EventHandler<ggez::GameError> for MainState {
             }
         }
 
-
+        // Update each collectible
+        for collectible in &mut self.collectibles {
+            collectible.time += dt; 
+  
+        }
         // Update all flash effects
         for effect in &mut self.flash_effect_pool {
             effect.update(dt);

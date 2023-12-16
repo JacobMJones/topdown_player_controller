@@ -10,32 +10,44 @@ pub struct Collectible {
     pub size: f32,
     pub active: bool,
     pub radius: f32,
-
+    pub time: f32,
 }
 
 impl Collectible {
-    pub fn new(x: f32, y: f32, size: f32) -> Self {
+    pub fn new(x: f32, y: f32, size: f32, initial_time:f32) -> Self {
         Collectible {
             position: Point2 { x, y },
             size,
             active: true,
             radius: size/2.0,
-
+            time:initial_time
         }
     }
-
+    fn get_pulsating_size(&self) -> f32 {
+        let pulsation_factor = 0.5; // Adjust this value for more/less pulsation
+        self.size + self.size * pulsation_factor * self.time.sin()
+    }
+    fn get_dynamic_color(&self) -> Color {
+        let r = (self.time.sin() * 0.5 + 0.5) as f32;
+        let g = ((self.time + 2.0).sin() * 0.5 + 0.5) as f32;
+        let b = ((self.time + 4.0).sin() * 0.5 + 0.5) as f32;
+        Color::new(r, g, b, 1.0)
+    }
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         if self.active {
+            let size = self.get_pulsating_size(); 
             let square = graphics::Mesh::new_rectangle(
                 ctx,
                 graphics::DrawMode::fill(),
                 graphics::Rect::new(
                     self.position.x,
                     self.position.y,
-                    self.size,
-                    self.size,
+                    size,
+                    size,
                 ),
-                graphics::Color::from_rgb(55, 215, 0), // Gold color, for example
+                self.get_dynamic_color(), 
+                // graphics::Color::from_rgb(55, 215, 0), 
+
             )?;
             graphics::draw(ctx, &square, graphics::DrawParam::default())?;
         }
@@ -48,6 +60,7 @@ impl Collectible {
             self.size,
             self.size,
         )
+        
     }
     pub fn activate_flash_effect(&self, flash_effect_pool: &mut Vec<FlashEffect>) {
         if let Some(inactive_effect) = flash_effect_pool.iter_mut().find(|e| !e.is_active()) {
