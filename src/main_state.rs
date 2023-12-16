@@ -52,12 +52,22 @@ impl event::EventHandler<ggez::GameError> for MainState {
         }
 
         let player_bbox = self.player.bounding_box();
-        for collectible in &self.collectibles {
+        let mut to_remove = Vec::new();
+
+        for (index, collectible) in self.collectibles.iter().enumerate() {
             let collectible_bbox = collectible.bounding_box();
             if check_collision(&player_bbox, &collectible_bbox) {
-                println!("collision")
+                // Additional logic for collision
+                println!("Collided with collectible at position: ({}, {})", collectible.position.x, collectible.position.y);
+                to_remove.push(index);
             }
         }
+
+        // Remove collided collectibles
+        for index in to_remove.into_iter().rev() {
+            self.collectibles.remove(index);
+        }
+
         self.player.update(dt);
         Ok(())
     }

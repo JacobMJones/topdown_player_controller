@@ -96,12 +96,13 @@ impl Player {
                 .offset(mint::Point2 { x: 0.5, y: 0.5 }),
         )
     }
+   
     pub fn bounding_box(&self) -> graphics::Rect {
         graphics::Rect::new(
-            self.position.x - self.radius,
-            self.position.y - self.radius,
-            self.radius * 2.0,
-            self.radius * 2.0,
+            self.position.x - self.radius, // center position minus radius
+            self.position.y - self.radius, // center position minus radius
+            self.radius * 2.0, // width: diameter of the circle
+            self.radius * 2.0, // height: diameter of the circle
         )
     }
 
