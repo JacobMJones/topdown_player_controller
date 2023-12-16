@@ -2,7 +2,7 @@ use ggez::{graphics, Context, GameResult};
 use mint;
 
 pub const MOVEMENT_SPEED: f32 = 1500.0;
-pub const ROTATION_SPEED: f32 = 3.0;
+//pub const ROTATION_SPEED: f32 = 3.0;
 
 pub struct Player {
     pub position: mint::Point2<f32>,
@@ -12,12 +12,11 @@ pub struct Player {
     pub speed: f32,
     pub acceleration: f32,
     pub max_speed: f32,
-
+    pub radius: f32,
 }
 
 impl Player {
     pub fn new() -> Self {
-
         Player {
             position: mint::Point2 { x: 400.0, y: 300.0 },
             rotation: 0.0,
@@ -26,6 +25,7 @@ impl Player {
             speed: 0.0,
             acceleration: 2000.0, // Adjust this value as needed
             max_speed: MOVEMENT_SPEED,
+            radius: 15.0,
         }
     }
 
@@ -96,6 +96,13 @@ impl Player {
                 .offset(mint::Point2 { x: 0.5, y: 0.5 }),
         )
     }
-    
+    pub fn bounding_box(&self) -> graphics::Rect {
+        graphics::Rect::new(
+            self.position.x - self.radius,
+            self.position.y - self.radius,
+            self.radius * 2.0,
+            self.radius * 2.0,
+        )
+    }
 
 }
