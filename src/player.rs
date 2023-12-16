@@ -59,12 +59,12 @@ impl Player {
 
         // Define maximum and minimum radii
         let max_radius = 30.0;  // Larger radius when stationary
-        let min_radius = 27.0;  // Smaller radius at maximum speed
+        let min_radius = 25.0;  // Smaller radius at maximum speed
         let radius_factor = self.speed / self.max_speed;
         let radius = max_radius - (max_radius - min_radius) * radius_factor;
         // Define white and yellow colors
-        let white = graphics::Color::from_rgb(255, 255, 255);
-        let yellow = graphics::Color::from_rgb(255, 255, 0);
+        let white = graphics::Color::from_rgb(115, 215, 255);
+        let yellow = graphics::Color::from_rgb(215, 255, 0);
     
         // Calculate the interpolation factor (0.0 when speed is 0, 1.0 when speed is max_speed)
         let factor = self.speed / self.max_speed;

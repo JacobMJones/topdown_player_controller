@@ -1,13 +1,16 @@
 use rand::Rng; 
+use crate::flash_effect::FlashEffect;
 use crate::player::Player;
 use crate::collectible::Collectible;
 use ggez::{event, graphics, Context, GameResult};
+use ggez::graphics::Color;
 use gilrs::{Event, EventType, Gilrs, Axis};
 //Main state is passed context(ctx) from main.rs
 pub struct MainState {
     gilrs: Gilrs,
     player: Player,
     collectibles: Vec<Collectible>,
+    flash_effect_pool: Vec<FlashEffect>,
 }
 fn check_collision(rect1: &graphics::Rect, rect2: &graphics::Rect) -> bool {
     rect1.x < rect2.x + rect2.w &&
@@ -27,8 +30,12 @@ impl MainState {
             let x = rng.gen_range(50.0..1200.0); 
             let y = rng.gen_range(50.0..1000.0); 
             collectibles.push(Collectible::new(x, y,50.0)); // Adjust the third parameter as needed
-        }    
-        Ok(MainState { gilrs, player, collectibles })
+        }
+        let mut flash_effect_pool = Vec::new();
+        for _ in 0..10 { // For example, pre-create 10 effects
+            flash_effect_pool.push(FlashEffect::new_inactive()); // You need to create this method
+        }   
+        Ok(MainState { gilrs, player, collectibles, flash_effect_pool })
     }
 }
 impl event::EventHandler<ggez::GameError> for MainState {
@@ -58,6 +65,13 @@ impl event::EventHandler<ggez::GameError> for MainState {
             let collectible_bbox = collectible.bounding_box();
             if check_collision(&player_bbox, &collectible_bbox) {
                 // Additional logic for collision
+                if let Some(inactive_effect) = self.flash_effect_pool.iter_mut().find(|e| !e.is_active()) {
+                    inactive_effect.activate(
+                        collectible.position,
+                        Color::new(1.0, 0.0, 0.0, 1.0), // Red color
+                        0.5, // Duration
+                    );
+                }
                 println!("Collided with collectible at position: ({}, {})", collectible.position.x, collectible.position.y);
                 to_remove.push(index);
             }
@@ -67,7 +81,9 @@ impl event::EventHandler<ggez::GameError> for MainState {
         for index in to_remove.into_iter().rev() {
             self.collectibles.remove(index);
         }
-
+        for effect in &mut self.flash_effect_pool {
+            effect.update(dt);
+        }
         self.player.update(dt);
         Ok(())
     }
@@ -75,8 +91,15 @@ impl event::EventHandler<ggez::GameError> for MainState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         graphics::clear(ctx, graphics::Color::from_rgb(0, 0, 0));
         self.player.draw(ctx)?;
+
         for collectible in &self.collectibles {
             collectible.draw(ctx)?;
+        }
+        // Draw active flash effects
+        for effect in &self.flash_effect_pool {
+            if effect.is_active() {
+                effect.draw(ctx)?;
+            }
         }
         graphics::present(ctx)
     }
