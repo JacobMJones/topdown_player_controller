@@ -2,6 +2,7 @@ mod player;
 mod main_state;
 mod collectible;
 mod flash_effect;
+mod event_handler;
 use ggez::{conf, event, ContextBuilder};
 use main_state::MainState;
 
