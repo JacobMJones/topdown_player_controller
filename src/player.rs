@@ -2,7 +2,7 @@ use ggez::{graphics, Context, GameResult};
 use mint;
 use crate::collidable::Collidable;
 use ggez::graphics::Rect; 
-pub const MOVEMENT_SPEED: f32 = 1500.0;
+pub const MOVEMENT_SPEED: f32 = 1000.0;
 //pub const ROTATION_SPEED: f32 = 3.0;
 
 pub struct Player {
@@ -97,17 +97,6 @@ impl Player {
                 .offset(mint::Point2 { x: 0.5, y: 0.5 }),
         )
     }
-   
-    pub fn bounding_box(&self) -> graphics::Rect {
-        graphics::Rect::new(
-            self.position.x - self.radius, // center position minus radius
-            self.position.y - self.radius, // center position minus radius
-            self.radius * 2.0, // width: diameter of the circle
-            self.radius * 2.0, // height: diameter of the circle
-        )
-    }
-
-
 }
 
 impl Collidable for Player {

@@ -47,8 +47,8 @@ impl FlashEffect {
                 ctx,
                 graphics::DrawMode::fill(),
                 self.position,
-                20.0, // radius of the flash effect
-                0.1,  // tolerance, a lower value makes the circle smoother
+                10.0, // radius of the flash effect
+                0.01,  // tolerance, a lower value makes the circle smoother
                 self.color,
             )?;
 

@@ -4,7 +4,7 @@ use mint::Point2;
 use ggez::graphics::Color;
 use crate::flash_effect::FlashEffect;
 use crate::collidable::Collidable;
-
+use rand::Rng; 
 pub struct Collectible {
     pub position: Point2<f32>,
     pub size: f32,
@@ -24,7 +24,7 @@ impl Collectible {
         }
     }
     fn get_pulsating_size(&self) -> f32 {
-        let pulsation_factor = 0.5; // Adjust this value for more/less pulsation
+        let pulsation_factor = 0.9; // Adjust this value for more/less pulsation
         let min_size = 10.0; // Minimum size
         let max_size = self.size; // Maximum size, based on initial size
         let mut pulsating_size = self.size + pulsation_factor * self.time.sin();
@@ -47,6 +47,7 @@ impl Collectible {
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         if self.active {
             let size = self.get_pulsating_size(); 
+            //let size = self.size;
             let square = graphics::Mesh::new_rectangle(
                 ctx,
                 graphics::DrawMode::fill(),
@@ -56,8 +57,8 @@ impl Collectible {
                     size,
                     size,
                 ),
-                self.get_dynamic_color(), 
-                // graphics::Color::from_rgb(55, 215, 0), 
+                 self.get_dynamic_color(), 
+                 //graphics::Color::from_rgb(55, 215, 0), 
 
             )?;
             graphics::draw(ctx, &square, graphics::DrawParam::default())?;
@@ -74,17 +75,33 @@ impl Collectible {
         
     }
     pub fn activate_flash_effect(&self, flash_effect_pool: &mut Vec<FlashEffect>) {
-        if let Some(inactive_effect) = flash_effect_pool.iter_mut().find(|e| !e.is_active()) {
-            let adjusted_position = Point2 {
-                x: self.position.x + self.size / 2.0,
-                y: self.position.y + self.size / 2.0,
-            };
+        let mut rng = rand::thread_rng(); // Create a random number generator
 
-            inactive_effect.activate(
-                adjusted_position,
-                Color::new(1.0, 0.0, 0.0, 1.0), // Red color
-                0.5, // Duration
-            );
+        for _ in 0..4 { // Loop to activate up to 4 effects
+            if let Some(inactive_effect) = flash_effect_pool.iter_mut().find(|e| !e.is_active()) {
+                // Calculate the base adjusted position
+                let base_adjusted_position = Point2 {
+                    x: self.position.x + self.size / 2.0,
+                    y: self.position.y + self.size / 2.0,
+                };
+    
+                // Create a random offset
+                let offset_x: f32 = rng.gen_range(-10.0..10.0); // Random offset in x direction
+                let offset_y: f32 = rng.gen_range(-10.0..10.0); // Random offset in y direction
+    
+                // Apply the offset to the base position
+                let random_adjusted_position = Point2 {
+                    x: base_adjusted_position.x + offset_x,
+                    y: base_adjusted_position.y + offset_y,
+                };
+                let random_duration: f32 = rng.gen_range(0.1..0.4);
+                // Activate the effect with the randomly adjusted position
+                inactive_effect.activate(
+                    random_adjusted_position,
+                    Color::new(1.0, 1.0, 1.0, 1.0), // White color
+                    random_duration, // Duration
+                );
+            }
         }
     }
 }

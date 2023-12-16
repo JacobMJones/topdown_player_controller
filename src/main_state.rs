@@ -27,7 +27,7 @@ impl MainState {
         // Initialize multiple collectibles with random positions
         let mut collectibles = Vec::new();
         let mut rng = rand::thread_rng(); // Creates a random number generator
-        for _ in 0..1500 {
+        for _ in 0..1000 {
             let x = rng.gen_range(50.0..1500.0); 
             let y = rng.gen_range(50.0..1500.0); 
             let initial_time = rng.gen_range(0.0..6.28); // Random time value, for example
@@ -37,8 +37,8 @@ impl MainState {
 
         //Initialize multiple flash effects and put them into a pool
         let mut flash_effect_pool = Vec::new();
-        for _ in 0..10 { // For example, pre-create 10 effects
-            flash_effect_pool.push(FlashEffect::new_inactive()); // You need to create this method
+        for _ in 0..30 { // For example, pre-create 10 effects
+            flash_effect_pool.push(FlashEffect::new_inactive()); 
         }   
 
         let player = Player::new();
@@ -96,8 +96,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         graphics::clear(ctx, graphics::Color::from_rgb(0, 0, 0));
        
-        // Draw the player
-        self.player.draw(ctx)?;
+   
 
         // Draw each collectible
         for collectible in &self.collectibles {
@@ -110,7 +109,8 @@ impl event::EventHandler<ggez::GameError> for MainState {
                 effect.draw(ctx)?;
             }
         }
-
+        // Draw the player
+        self.player.draw(ctx)?;
         graphics::present(ctx)
     }
 }
