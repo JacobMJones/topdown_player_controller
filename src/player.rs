@@ -112,6 +112,11 @@ impl Player {
 
 impl Collidable for Player {
     fn bounding_box(&self) -> Rect {
-        self.bounding_box()
+        graphics::Rect::new(
+            self.position.x - self.radius,
+            self.position.y - self.radius,
+            self.radius * 2.0,
+            self.radius * 2.0,
+        )
     }
 }

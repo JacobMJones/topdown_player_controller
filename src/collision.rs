@@ -1,8 +1,5 @@
 use ggez::graphics;
-use crate::player::Player;
-//use crate::collectible::Collectible;
 use crate::collidable::Collidable;
-
 
 pub fn check_collision(rect1: &graphics::Rect, rect2: &graphics::Rect) -> bool {
     rect1.x < rect2.x + rect2.w &&
@@ -11,16 +8,24 @@ pub fn check_collision(rect1: &graphics::Rect, rect2: &graphics::Rect) -> bool {
     rect1.y + rect1.h > rect2.y
 }
 
-pub fn handle_collisions<T: Collidable>(player: &Player, collidables: &[T]) -> Vec<usize> {
-    let player_bbox = player.bounding_box();
-    let mut to_remove = Vec::new();
+pub fn handle_collisions<T: Collidable + ?Sized, U: Collidable + ?Sized>(
+    collidables1: &[&T], 
+    collidables2: &[&U]
+) -> Vec<(usize, usize)> {
+    let mut collisions = Vec::new();
 
-    for (index, collidable) in collidables.iter().enumerate() {
-        let collidable_bbox = collidable.bounding_box();
-        if check_collision(&player_bbox, &collidable_bbox) {
-            to_remove.push(index);
+    for (i, collidable1) in collidables1.iter().enumerate() {
+        let bbox1 = collidable1.bounding_box();
+
+        for (j, collidable2) in collidables2.iter().enumerate() {
+            let bbox2 = collidable2.bounding_box();
+
+            if check_collision(&bbox1, &bbox2) {
+                collisions.push((i, j));
+            }
         }
     }
 
-    to_remove
+    collisions
 }
+

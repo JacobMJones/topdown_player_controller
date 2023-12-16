@@ -19,22 +19,12 @@ impl FlashEffect {
         }
     }
 
-    // Method to activate the effect
     pub fn activate(&mut self, position: Point2<f32>, color: Color, duration: f32) {
         self.position = position;
         self.color = color;
         self.duration = duration;
         self.timer = 0.0; // Reset timer
     }
-
-    // pub fn new(position: Point2<f32>, color: Color, duration: f32) -> Self {
-    //     FlashEffect {
-    //         position,
-    //         color,
-    //         duration,
-    //         timer: 0.0,
-    //     }
-    // }
 
     pub fn update(&mut self, dt: f32) {
         if self.is_active() {
