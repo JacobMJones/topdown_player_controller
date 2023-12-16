@@ -7,49 +7,61 @@ use ggez::graphics::Color;
 use gilrs::Gilrs;
 use mint::Point2;
 use crate::event_handler::EventHandler;
-//Main state is passed context(ctx) from main.rs
+
 pub struct MainState {
     event_handler: EventHandler,
     player: Player,
     collectibles: Vec<Collectible>,
     flash_effect_pool: Vec<FlashEffect>,
 }
+
 fn check_collision(rect1: &graphics::Rect, rect2: &graphics::Rect) -> bool {
     rect1.x < rect2.x + rect2.w &&
     rect1.x + rect1.w > rect2.x &&
     rect1.y < rect2.y + rect2.h &&
     rect1.y + rect1.h > rect2.y
 }
+
 impl MainState {
     pub fn new(_ctx: &mut Context) -> GameResult<MainState> {
+        
+        //gamepad
         let gilrs = Gilrs::new().unwrap();
+        //gamepad events
         let event_handler = EventHandler::new(gilrs);
-        let player = Player::new();
-
+       
         // Initialize multiple collectibles with random positions
         let mut collectibles = Vec::new();
-        let mut rng = rand::thread_rng(); // Create a random number generator
+        let mut rng = rand::thread_rng(); // Creates a random number generator
         for _ in 0..1500 {
-            // Generate random x and y within the range -1000 to 1000
             let x = rng.gen_range(50.0..1500.0); 
             let y = rng.gen_range(50.0..1500.0); 
-            collectibles.push(Collectible::new(x, y,50.0)); // Adjust the third parameter as needed
+            collectibles.push(Collectible::new(x, y,30.0)); 
         }
+
+        //Initialize multiple flash effects and put them into a pool
         let mut flash_effect_pool = Vec::new();
         for _ in 0..10 { // For example, pre-create 10 effects
             flash_effect_pool.push(FlashEffect::new_inactive()); // You need to create this method
         }   
+
+        let player = Player::new();
+
         Ok(MainState {event_handler, player, collectibles, flash_effect_pool })
     }
+
 }
+
 impl event::EventHandler<ggez::GameError> for MainState {
     //always fires
     fn update(&mut self, ctx: &mut Context) -> GameResult {
       
         let dt = ggez::timer::delta(ctx).as_secs_f32();
 
-        // fires when a new event is available (from gilrs - controller)
+        // fires when a new event is available 
         self.event_handler.process_events(&mut self.player);
+
+        //Collision detection
         let player_bbox = self.player.bounding_box();
         let mut to_remove = Vec::new();
         for (index, collectible) in self.collectibles.iter().enumerate() {

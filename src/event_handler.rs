@@ -1,10 +1,8 @@
-
 use gilrs::{Gilrs, Event, EventType, Axis};
 use crate::player::Player;
 
 pub struct EventHandler {
     gilrs: Gilrs,
-    // Any other fields needed for event handling
 }
 
 impl EventHandler {
