@@ -1,6 +1,7 @@
 use ggez::{graphics, Context, GameResult};
 use mint;
-
+use crate::collidable::Collidable;
+use ggez::graphics::Rect; 
 pub const MOVEMENT_SPEED: f32 = 1500.0;
 //pub const ROTATION_SPEED: f32 = 3.0;
 
@@ -106,4 +107,11 @@ impl Player {
         )
     }
 
+
+}
+
+impl Collidable for Player {
+    fn bounding_box(&self) -> Rect {
+        self.bounding_box()
+    }
 }

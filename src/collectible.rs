@@ -1,8 +1,10 @@
 use ggez::{graphics, Context, GameResult};
-use ggez::graphics::Rect; // Import Rect
+use ggez::graphics::Rect; 
 use mint::Point2;
 use ggez::graphics::Color;
 use crate::flash_effect::FlashEffect;
+use crate::collidable::Collidable;
+
 pub struct Collectible {
     pub position: Point2<f32>,
     pub size: f32,
@@ -60,5 +62,11 @@ impl Collectible {
                 0.5, // Duration
             );
         }
+    }
+}
+
+impl Collidable for Collectible {
+    fn bounding_box(&self) -> Rect {
+        self.bounding_box()
     }
 }

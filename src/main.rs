@@ -4,6 +4,7 @@ mod collectible;
 mod flash_effect;
 mod collision;
 mod event_handler;
+mod collidable;
 use ggez::{conf, event, ContextBuilder};
 use main_state::MainState;
 
