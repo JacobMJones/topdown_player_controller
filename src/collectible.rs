@@ -1,6 +1,8 @@
 use ggez::{graphics, Context, GameResult};
 use ggez::graphics::Rect; // Import Rect
 use mint::Point2;
+use ggez::graphics::Color;
+use crate::flash_effect::FlashEffect;
 pub struct Collectible {
     pub position: Point2<f32>,
     pub size: f32,
@@ -45,5 +47,18 @@ impl Collectible {
             self.size,
         )
     }
+    pub fn activate_flash_effect(&self, flash_effect_pool: &mut Vec<FlashEffect>) {
+        if let Some(inactive_effect) = flash_effect_pool.iter_mut().find(|e| !e.is_active()) {
+            let adjusted_position = Point2 {
+                x: self.position.x + self.size / 2.0,
+                y: self.position.y + self.size / 2.0,
+            };
 
+            inactive_effect.activate(
+                adjusted_position,
+                Color::new(1.0, 0.0, 0.0, 1.0), // Red color
+                0.5, // Duration
+            );
+        }
+    }
 }

@@ -1,4 +1,5 @@
 use rand::Rng; 
+use crate::collision;
 use crate::flash_effect::FlashEffect;
 use crate::player::Player;
 use crate::collectible::Collectible;
@@ -13,13 +14,6 @@ pub struct MainState {
     player: Player,
     collectibles: Vec<Collectible>,
     flash_effect_pool: Vec<FlashEffect>,
-}
-
-fn check_collision(rect1: &graphics::Rect, rect2: &graphics::Rect) -> bool {
-    rect1.x < rect2.x + rect2.w &&
-    rect1.x + rect1.w > rect2.x &&
-    rect1.y < rect2.y + rect2.h &&
-    rect1.y + rect1.h > rect2.y
 }
 
 impl MainState {
@@ -46,7 +40,6 @@ impl MainState {
         }   
 
         let player = Player::new();
-
         Ok(MainState {event_handler, player, collectibles, flash_effect_pool })
     }
 
@@ -55,38 +48,14 @@ impl MainState {
 impl event::EventHandler<ggez::GameError> for MainState {
     //always fires
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-      
         let dt = ggez::timer::delta(ctx).as_secs_f32();
 
-        // fires when a new event is available 
         self.event_handler.process_events(&mut self.player);
 
-        //Collision detection
-        let player_bbox = self.player.bounding_box();
-        let mut to_remove = Vec::new();
-        for (index, collectible) in self.collectibles.iter().enumerate() {
-            let collectible_bbox = collectible.bounding_box();
-            if check_collision(&player_bbox, &collectible_bbox) {
+        let to_remove = collision::handle_collisions(&mut self.player, &mut self.collectibles);
 
-                // Additional logic for collision
-                if let Some(inactive_effect) = self.flash_effect_pool.iter_mut().find(|e| !e.is_active()) {
-
-                    // Create a new Point2, adjust position
-                    let adjusted_position = Point2 { x: collectible.position.x + collectible.size/2.0, y: collectible.position.y + collectible.size/2.0 };
-                    
-                    // Pass the adjusted_position to the activate method
-                    inactive_effect.activate(
-                        adjusted_position,
-                        Color::new(1.0, 0.0, 0.0, 1.0), // Red color
-                        0.5, // Duration
-                    );
-                }
-                to_remove.push(index);
-            }
-        }
-
-        // Remove collided collectibles
         for index in to_remove.into_iter().rev() {
+            self.collectibles[index].activate_flash_effect(&mut self.flash_effect_pool);
             self.collectibles.remove(index);
         }
         for effect in &mut self.flash_effect_pool {
