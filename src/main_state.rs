@@ -23,10 +23,11 @@ impl MainState {
     pub fn new(ctx: &mut Context) -> GameResult<MainState> {
         let gilrs = Gilrs::new().unwrap();
         let player = Player::new();
+
         // Initialize multiple collectibles with random positions
         let mut collectibles = Vec::new();
         let mut rng = rand::thread_rng(); // Create a random number generator
-        for _ in 0..20 {
+        for _ in 0..1200 {
             // Generate random x and y within the range -1000 to 1000
             let x = rng.gen_range(50.0..1200.0); 
             let y = rng.gen_range(50.0..1000.0); 
@@ -78,7 +79,6 @@ impl event::EventHandler<ggez::GameError> for MainState {
                         0.5, // Duration
                     );
                 }
-                println!("Collided with collectible at position: ({}, {})", collectible.position.x, collectible.position.y);
                 to_remove.push(index);
             }
         }
