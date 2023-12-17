@@ -26,7 +26,7 @@ impl Player {
             speed: 0.0,
             acceleration: 2000.0, // Adjust this value as needed
             max_speed: MOVEMENT_SPEED,
-            radius: 15.0,
+            radius: 25.0,
         }
     }
 

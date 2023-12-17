@@ -69,7 +69,10 @@ impl Collectible {
             Color::new(r, g, b, 1.0)
         } else {
             // Gray color when in proximity
-            Color::new(0.5, 0.5, 0.5, 1.0)
+            let r = (self.time.sin() * 0.5 + 0.5) as f32;
+            let g = ((self.time + 2.0).sin() * 0.5 + 0.5) as f32;
+            let b = ((self.time + 4.0).sin() * 0.5 + 0.5) as f32;
+            Color::new(r, g, b, 0.1)
         }
     }
     // Call this method to mark the collectible as in proximity
