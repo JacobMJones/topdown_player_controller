@@ -1,8 +1,7 @@
 use crate::collidable::Collidable;
 use crate::flash_effect::FlashEffect;
-use ggez::graphics::Color;
-use ggez::graphics::Rect;
-use ggez::{graphics, Context, GameResult};
+use ggez::graphics::{self, Color, Mesh, Rect};
+use ggez::{Context, GameResult};
 use mint::Point2;
 use rand::Rng;
 pub struct Collectible {
@@ -13,11 +12,19 @@ pub struct Collectible {
     pub time: f32,
     pub id: String,
     pub in_proximity: bool,
+    mesh: Mesh,
 }
 
 impl Collectible {
-    pub fn new(x: f32, y: f32, size: f32, initial_time: f32, id: String) -> Self {
-        Collectible {
+    pub fn new(ctx: &mut Context, x: f32, y: f32, size: f32, initial_time: f32, id: String) -> GameResult<Self> {
+        let mesh = graphics::Mesh::new_rectangle(
+            ctx,
+            graphics::DrawMode::fill(),
+            Rect::new(0.0, 0.0, size, size),
+            Color::WHITE,
+        )?;
+
+        Ok(Collectible {
             position: Point2 { x, y },
             size,
             active: true,
@@ -25,8 +32,20 @@ impl Collectible {
             time: initial_time,
             id,
             in_proximity: false,
-        }
+            mesh,
+        })
     }
+    // pub fn new(x: f32, y: f32, size: f32, initial_time: f32, id: String) -> Self {
+    //     Collectible {
+    //         position: Point2 { x, y },
+    //         size,
+    //         active: true,
+    //         radius: size / 2.0,
+    //         time: initial_time,
+    //         id,
+    //         in_proximity: false,
+    //     }
+    // }
     fn get_pulsating_size(&self) -> f32 {
         let pulsation_factor = 0.9; // Adjust this value for more/less pulsation
         let min_size = 10.0; // Minimum size
@@ -60,15 +79,21 @@ impl Collectible {
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         if self.active {
             let size = self.get_pulsating_size();
-            //let size = self.size;
-            let square = graphics::Mesh::new_rectangle(
+            let color = self.get_dynamic_color();
+
+            // Calculate the scale factor based on the current size
+            let scale_x = size / self.size;
+            let scale_y = size / self.size;
+
+            // Draw the mesh with updated scale and color
+            graphics::draw(
                 ctx,
-                graphics::DrawMode::fill(),
-                graphics::Rect::new(self.position.x, self.position.y, size, size),
-                self.get_dynamic_color(),
-                //graphics::Color::from_rgb(55, 215, 0),
+                &self.mesh,
+                graphics::DrawParam::default()
+                    .dest([self.position.x, self.position.y])
+                    .scale([scale_x, scale_y])
+                    .color(color),
             )?;
-            graphics::draw(ctx, &square, graphics::DrawParam::default())?;
         }
         Ok(())
     }

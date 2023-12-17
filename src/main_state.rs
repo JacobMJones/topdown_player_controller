@@ -17,8 +17,7 @@ pub struct MainState {
 }
 
 impl MainState {
-    pub fn new(_ctx: &mut Context) -> GameResult<MainState> {
-        
+    pub fn new(ctx: &mut Context) -> GameResult<MainState> {
         //gamepad
         let gilrs = Gilrs::new().unwrap();
         //gamepad events
@@ -33,8 +32,8 @@ impl MainState {
             let initial_time = rng.gen_range(0.0..6.28);
         
             let id = format!("collect{}", i); // Generate an ID like "collect1", "collect2", etc.
-            collectibles.push(Collectible::new(x, y, 30.0, initial_time, id));
-        }
+            collectibles.push(Collectible::new(ctx, x, y, 30.0, initial_time, id)?);
+        } // Corrected: This brace closes the for loop
 
         //Initialize multiple flash effects and put them into a pool
         let mut flash_effect_pool = Vec::new();
@@ -45,8 +44,8 @@ impl MainState {
         let player = Player::new();
         Ok(MainState {event_handler, player, collectibles, flash_effect_pool })
     }
-
 }
+
 
 impl event::EventHandler<ggez::GameError> for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
