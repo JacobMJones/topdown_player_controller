@@ -55,7 +55,6 @@ impl Collectible {
     }
     // Call this method to mark the collectible as in proximity
     pub fn set_in_proximity(&mut self, in_proximity: bool) {
-        println!("{}",in_proximity);
         self.in_proximity = in_proximity;
     }
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {

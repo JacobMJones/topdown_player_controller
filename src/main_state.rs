@@ -23,13 +23,12 @@ impl MainState {
         //gamepad
         let gilrs = Gilrs::new().unwrap();
         //gamepad events
-        let event_handler = EventHandler::new(gilrs);
-       
+        let event_handler = EventHandler::new(gilrs);     
         // Initialize multiple collectibles with random positions
         let mut collectibles = Vec::new();
         let mut rng = rand::thread_rng(); // Creates a random number generator
 
-        for i in 0..1 {
+        for i in 0..800 {
             let x = rng.gen_range(50.0..1500.0); 
             let y = rng.gen_range(50.0..1500.0); 
             let initial_time = rng.gen_range(0.0..6.28);
@@ -57,8 +56,8 @@ impl event::EventHandler<ggez::GameError> for MainState {
         // Handle gamepad input
         self.event_handler.process_events(&mut self.player);
 
-        // Define the proximity threshold
-        const PROXIMITY_THRESHOLD: f32 = 100.0;
+        // Define the proximity threshold for collectibles
+        const PROXIMITY_THRESHOLD: f32 = 500.0;
 
         // Get a trait object for player as collidable
         let player_collidable: &dyn Collidable = &self.player;
@@ -80,9 +79,8 @@ impl event::EventHandler<ggez::GameError> for MainState {
                    // println!("Collectible {} is within proximity threshold: {}", collectible_index, collectible.in_proximity);
                 }
             } else {
-                // If the collectible is not in proximity, reset its state
+                // If the collectible is not in proximity, reset its in_proximity variable
                 if let Some(collectible) = self.collectibles.get_mut(collectible_index) {
-                    println!("In not in proximity: {}", collectible.id);
                     collectible.set_in_proximity(false);
                 }
             }
