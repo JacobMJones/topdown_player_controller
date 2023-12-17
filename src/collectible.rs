@@ -1,26 +1,30 @@
-use ggez::{graphics, Context, GameResult};
-use ggez::graphics::Rect; 
-use mint::Point2;
-use ggez::graphics::Color;
-use crate::flash_effect::FlashEffect;
 use crate::collidable::Collidable;
-use rand::Rng; 
+use crate::flash_effect::FlashEffect;
+use ggez::graphics::Color;
+use ggez::graphics::Rect;
+use ggez::{graphics, Context, GameResult};
+use mint::Point2;
+use rand::Rng;
 pub struct Collectible {
     pub position: Point2<f32>,
     pub size: f32,
     pub active: bool,
     pub radius: f32,
     pub time: f32,
+    pub id: String,
+    pub in_proximity: bool,
 }
 
 impl Collectible {
-    pub fn new(x: f32, y: f32, size: f32, initial_time:f32) -> Self {
+    pub fn new(x: f32, y: f32, size: f32, initial_time: f32, id: String) -> Self {
         Collectible {
             position: Point2 { x, y },
             size,
             active: true,
-            radius: size/2.0,
-            time:initial_time
+            radius: size / 2.0,
+            time: initial_time,
+            id,
+            in_proximity: false,
         }
     }
     fn get_pulsating_size(&self) -> f32 {
@@ -35,31 +39,35 @@ impl Collectible {
         } else if pulsating_size > max_size {
             pulsating_size = max_size - (pulsating_size - max_size);
         }
-
         pulsating_size
     }
     fn get_dynamic_color(&self) -> Color {
-        let r = (self.time.sin() * 0.5 + 0.5) as f32;
-        let g = ((self.time + 2.0).sin() * 0.5 + 0.5) as f32;
-        let b = ((self.time + 4.0).sin() * 0.5 + 0.5) as f32;
-        Color::new(r, g, b, 1.0)
+        if !self.in_proximity {
+            // Original dynamic color
+            let r = (self.time.sin() * 0.5 + 0.5) as f32;
+            let g = ((self.time + 2.0).sin() * 0.5 + 0.5) as f32;
+            let b = ((self.time + 4.0).sin() * 0.5 + 0.5) as f32;
+            Color::new(r, g, b, 1.0)
+        } else {
+            // Gray color when in proximity
+            Color::new(0.5, 0.5, 0.5, 1.0)
+        }
+    }
+    // Call this method to mark the collectible as in proximity
+    pub fn set_in_proximity(&mut self, in_proximity: bool) {
+        println!("{}",in_proximity);
+        self.in_proximity = in_proximity;
     }
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         if self.active {
-            let size = self.get_pulsating_size(); 
+            let size = self.get_pulsating_size();
             //let size = self.size;
             let square = graphics::Mesh::new_rectangle(
                 ctx,
                 graphics::DrawMode::fill(),
-                graphics::Rect::new(
-                    self.position.x,
-                    self.position.y,
-                    size,
-                    size,
-                ),
-                 self.get_dynamic_color(), 
-                 //graphics::Color::from_rgb(55, 215, 0), 
-
+                graphics::Rect::new(self.position.x, self.position.y, size, size),
+                self.get_dynamic_color(),
+                //graphics::Color::from_rgb(55, 215, 0),
             )?;
             graphics::draw(ctx, &square, graphics::DrawParam::default())?;
         }
@@ -72,23 +80,22 @@ impl Collectible {
             self.size,
             self.size,
         )
-        
     }
     pub fn activate_flash_effect(&self, flash_effect_pool: &mut Vec<FlashEffect>) {
         let mut rng = rand::thread_rng(); // Create a random number generator
-
-        for _ in 0..4 { // Loop to activate up to 4 effects
+        for _ in 0..4 {
+            // Loop to activate up to 4 effects
             if let Some(inactive_effect) = flash_effect_pool.iter_mut().find(|e| !e.is_active()) {
                 // Calculate the base adjusted position
                 let base_adjusted_position = Point2 {
                     x: self.position.x + self.size / 2.0,
                     y: self.position.y + self.size / 2.0,
                 };
-    
+
                 // Create a random offset
                 let offset_x: f32 = rng.gen_range(-10.0..10.0); // Random offset in x direction
                 let offset_y: f32 = rng.gen_range(-10.0..10.0); // Random offset in y direction
-    
+
                 // Apply the offset to the base position
                 let random_adjusted_position = Point2 {
                     x: base_adjusted_position.x + offset_x,
@@ -99,7 +106,7 @@ impl Collectible {
                 inactive_effect.activate(
                     random_adjusted_position,
                     Color::new(1.0, 1.0, 1.0, 1.0), // White color
-                    random_duration, // Duration
+                    random_duration,                // Duration
                 );
             }
         }
