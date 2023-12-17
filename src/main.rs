@@ -2,7 +2,7 @@ mod player;
 mod main_state;
 mod collectible;
 mod flash_effect;
-mod collision;
+mod proximity_and_collision_handler;
 mod event_handler;
 mod collidable;
 use ggez::{conf, event, ContextBuilder};

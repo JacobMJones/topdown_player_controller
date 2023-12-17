@@ -1,6 +1,5 @@
 use rand::Rng; 
-use crate::collision::distance_between;
-use crate::collision::check_collision;
+use crate::proximity_and_collision_handler::handle_proximity_and_collisions;
 use crate::flash_effect::FlashEffect;
 use crate::player::Player;
 use crate::collectible::Collectible;
@@ -28,7 +27,7 @@ impl MainState {
         let mut collectibles = Vec::new();
         let mut rng = rand::thread_rng(); // Creates a random number generator
 
-        for i in 0..800 {
+        for i in 0..1800 {
             let x = rng.gen_range(50.0..1500.0); 
             let y = rng.gen_range(50.0..1500.0); 
             let initial_time = rng.gen_range(0.0..6.28);
@@ -136,38 +135,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
     }
 }
 
-pub fn handle_proximity_and_collisions<T: Collidable + ?Sized, U: Collidable + ?Sized>(
-    collidables1: &[&T], 
-    collidables2: &[&U],
-    proximity_threshold: f32
-) -> Vec<(usize, usize, f32, bool)> { // Returns index1, index2, distance, and collision flag
-    let mut results = Vec::new();
-
-    for (i, collidable1) in collidables1.iter().enumerate() {
-        let bbox1 = collidable1.bounding_box();
-
-        for (j, collidable2) in collidables2.iter().enumerate() {
-            let bbox2 = collidable2.bounding_box();
-
-            let distance = distance_between(&bbox1, &bbox2);
-            let is_collided = check_collision(&bbox1, &bbox2);
-
-            // Report if within proximity threshold or if a collision has occurred
-            if distance < proximity_threshold || is_collided {
-                results.push((i, j, distance, is_collided));
-            }
-        }
-    }
-
-    results
-}
 
 
 
 
-// //        for index in to_remove {
-//     if index < self.collectibles.len() {
-//         self.collectibles[index].activate_flash_effect(&mut self.flash_effect_pool);
-//         self.collectibles.remove(index);
-//     }
-// }
