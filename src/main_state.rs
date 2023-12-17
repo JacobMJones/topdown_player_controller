@@ -26,13 +26,13 @@ impl MainState {
         let mut collectibles = Vec::new();
         let mut rng = rand::thread_rng(); // Creates a random number generator
 
-        for i in 0..8000 {
+        for i in 0..5000 {
             let x = rng.gen_range(50.0..1500.0); 
             let y = rng.gen_range(50.0..1500.0); 
             let initial_time = rng.gen_range(0.0..6.28);
         
             let id = format!("collect{}", i); // Generate an ID like "collect1", "collect2", etc.
-            collectibles.push(Collectible::new(ctx, x, y, 30.0, initial_time, id)?);
+            collectibles.push(Collectible::new(ctx, x, y, 20.0, initial_time, id)?);
         } // Corrected: This brace closes the for loop
 
         //Initialize multiple flash effects and put them into a pool
@@ -55,7 +55,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
         self.event_handler.process_events(&mut self.player);
 
         // Define the proximity threshold for collectibles
-        const PROXIMITY_THRESHOLD: f32 = 500.0;
+        const PROXIMITY_THRESHOLD: f32 = 300.0;
 
         // Get a trait object for player as collidable
         let player_collidable: &dyn Collidable = &self.player;
@@ -69,7 +69,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
 
         let mut to_remove = Vec::new();
 
-        for (player_index, collectible_index, distance, is_collided) in proximity_and_collisions {
+        for (_player_index, collectible_index, distance, is_collided) in proximity_and_collisions {
             if distance < PROXIMITY_THRESHOLD / 2.0 {
                 // Assuming collectible_index is the index of the collectible in the collectibles vector
                 if let Some(collectible) = self.collectibles.get_mut(collectible_index) {
@@ -98,7 +98,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
 
         // Update each collectible
         for collectible in &mut self.collectibles {
-            collectible.time += dt; 
+            collectible.update(dt); 
         }
 
         // Update all flash effects

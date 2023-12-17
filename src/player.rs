@@ -26,7 +26,7 @@ impl Player {
             speed: 0.0,
             acceleration: 2000.0, // Adjust this value as needed
             max_speed: MOVEMENT_SPEED,
-            radius: 25.0,
+            radius: 45.0,
         }
     }
 
@@ -59,8 +59,8 @@ impl Player {
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
 
         // Define maximum and minimum radii
-        let max_radius = 30.0;  // Larger radius when stationary
-        let min_radius = 25.0;  // Smaller radius at maximum speed
+        let max_radius = 60.0;  // Larger radius when stationary
+        let min_radius = 45.0;  // Smaller radius at maximum speed
         let radius_factor = self.speed / self.max_speed;
         let radius = max_radius - (max_radius - min_radius) * radius_factor;
         // Define white and yellow colors

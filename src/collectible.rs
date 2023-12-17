@@ -1,6 +1,6 @@
 use crate::collidable::Collidable;
 use crate::flash_effect::FlashEffect;
-use ggez::graphics::{self, Color, Mesh, Rect};
+use ggez::graphics::{self, Color, Mesh, DrawMode, Rect};
 use ggez::{Context, GameResult};
 use mint::Point2;
 use rand::Rng;
@@ -17,10 +17,12 @@ pub struct Collectible {
 
 impl Collectible {
     pub fn new(ctx: &mut Context, x: f32, y: f32, size: f32, initial_time: f32, id: String) -> GameResult<Self> {
-        let mesh = graphics::Mesh::new_rectangle(
+        let mesh = graphics::Mesh::new_circle(
             ctx,
-            graphics::DrawMode::fill(),
-            Rect::new(0.0, 0.0, size, size),
+            DrawMode::fill(),
+            Point2 { x: 0.0, y: 0.0 },
+            size / 2.0,
+            2.0, // this controls the 'smoothness' of the circle
             Color::WHITE,
         )?;
 
@@ -35,17 +37,10 @@ impl Collectible {
             mesh,
         })
     }
-    // pub fn new(x: f32, y: f32, size: f32, initial_time: f32, id: String) -> Self {
-    //     Collectible {
-    //         position: Point2 { x, y },
-    //         size,
-    //         active: true,
-    //         radius: size / 2.0,
-    //         time: initial_time,
-    //         id,
-    //         in_proximity: false,
-    //     }
-    // }
+    pub fn update(&mut self, dt: f32) {
+        self.time += dt;
+        // Add any other updates you need here
+    }
     fn get_pulsating_size(&self) -> f32 {
         let pulsation_factor = 0.9; // Adjust this value for more/less pulsation
         let min_size = 10.0; // Minimum size
@@ -69,10 +64,7 @@ impl Collectible {
             Color::new(r, g, b, 1.0)
         } else {
             // Gray color when in proximity
-            let r = (self.time.sin() * 0.5 + 0.5) as f32;
-            let g = ((self.time + 2.0).sin() * 0.5 + 0.5) as f32;
-            let b = ((self.time + 4.0).sin() * 0.5 + 0.5) as f32;
-            Color::new(r, g, b, 0.1)
+            Color::new(1.0, 1.0, 1.0, 0.1)
         }
     }
     // Call this method to mark the collectible as in proximity
