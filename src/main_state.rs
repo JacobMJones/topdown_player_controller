@@ -33,7 +33,7 @@ impl MainState {
         let mut collectibles = Vec::new();
         let mut rng = rand::thread_rng();
 
-        for i in 0..10000 {
+        for i in 0..1000 {
             // Choose a random cluster point
             let (center_x, center_y) = cluster_points[rng.gen_range(0..cluster_points.len())];
 
@@ -43,7 +43,7 @@ impl MainState {
 
             let initial_time = rng.gen_range(0.0..6.28);
             let id = format!("collect{}", i);
-            collectibles.push(Collectible::new(ctx, x, y, 50.0, initial_time, id)?);
+            collectibles.push(Collectible::new(ctx, x, y, 150.0, initial_time, id)?);
         }
         //Initialize multiple smoke effects and put them into a pool
         let mut smoke_effect_pool = Vec::new();
@@ -108,7 +108,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
 
         // Update each collectible
         for collectible in &mut self.collectibles {
-            collectible.update(dt); 
+            collectible.update(ctx, dt);
         }
 
         // Update all smoke effects

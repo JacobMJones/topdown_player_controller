@@ -12,3 +12,4 @@ nalgebra = "0.29"
 mint = "0.5"
 rand = "0.8"  # or the version you are using
 rand_distr = "0.4"
+noise = "0.7"

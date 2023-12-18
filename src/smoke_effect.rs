@@ -2,34 +2,39 @@ use ggez::{graphics, Context, GameResult};
 use ggez::graphics::{Color, DrawParam, Mesh};
 use mint::Point2;
 use rand::Rng; 
+pub const OFFSET_RANGE: f32 = 2.0;
+pub const DURATION: f32 = 0.2;
+pub const SMOKE_COLOR: Color = Color::new(1.0, 1.0, 1.0, 1.0);
+pub const SMOKE_CIRCLE_RADIUS: f32 = 15.0;
+pub const SMOKE_CIRCLE_SMOOTHNESS: f32 = 1.0;
+
 pub struct SmokeEffect {
     position: Point2<f32>,
     color: Color,
-    duration: f32, // Duration in seconds
-    timer: f32,    // Timer to track the effect's lifetime
+    duration: f32, 
+    timer: f32,    
 }
 
 impl SmokeEffect {
     pub fn new_inactive() -> Self {
         SmokeEffect {
             position: Point2 { x: 0.0, y: 0.0 },
-            color: Color::new(0.0, 0.0, 0.0, 0.0), // Transparent
-            duration: 0.0,
+            color: SMOKE_COLOR, 
+            duration: DURATION,
             timer: 0.0,
         }
     }
 
-    pub fn activate(&mut self, base_position: Point2<f32>, offset_range: f32, color: Color, duration: f32) {
+    pub fn activate(&mut self, base_position: Point2<f32>) {
         let mut rng = rand::thread_rng();
-        let offset_x: f32 = rng.gen_range(-offset_range..offset_range);
-        let offset_y: f32 = rng.gen_range(-offset_range..offset_range);
+        let offset_x: f32 = rng.gen_range(-OFFSET_RANGE..OFFSET_RANGE);
+        let offset_y: f32 = rng.gen_range(-OFFSET_RANGE..OFFSET_RANGE);
 
         self.position = Point2 {
             x: base_position.x + offset_x,
             y: base_position.y + offset_y,
         };
-        self.color = color;
-        self.duration = duration;
+        self.color = SMOKE_COLOR;
         self.timer = 0.0; 
     }
 
@@ -54,8 +59,8 @@ impl SmokeEffect {
                 ctx,
                 graphics::DrawMode::fill(),
                 self.position,
-                10.0, // radius of the smoke effect
-                0.01,  // tolerance, a lower value makes the circle smoother
+                SMOKE_CIRCLE_RADIUS, 
+                SMOKE_CIRCLE_SMOOTHNESS,  
                 self.color,
             )?;
 

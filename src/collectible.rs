@@ -1,9 +1,9 @@
 use crate::collidable::Collidable;
 use crate::smoke_effect::SmokeEffect;
-use ggez::graphics::{self, Color, Mesh, DrawMode, Rect};
+use ggez::graphics::{self, Color, Mesh, DrawMode, MeshBuilder, Rect};
 use ggez::{Context, GameResult};
 use mint::Point2;
-use rand::Rng;
+use noise::{NoiseFn, Perlin};
 
 pub struct Collectible {
     pub position: Point2<f32>,
@@ -14,11 +14,13 @@ pub struct Collectible {
     pub id: String,
     pub in_proximity: bool,
     mesh: Mesh,
+    noise: Perlin,
 }
 
 impl Collectible {
     pub fn new(ctx: &mut Context, x: f32, y: f32, size: f32, initial_time: f32, id: String) -> GameResult<Self> {
-        let mesh = create_circle_mesh(ctx, size)?;
+        let noise = Perlin::new();
+        let mesh = create_amorphous_mesh(ctx, size, &noise, initial_time)?;
         Ok(Collectible {
             position: Point2 { x, y },
             size,
@@ -28,11 +30,14 @@ impl Collectible {
             id,
             in_proximity: false,
             mesh,
+            noise
         })
     }
 
-    pub fn update(&mut self, dt: f32) {
+    pub fn update(&mut self, ctx: &mut Context, dt: f32) -> GameResult<()> {
         self.time += dt;
+        self.mesh = create_amorphous_mesh(ctx, self.size, &self.noise, self.time)?;
+        Ok(())
     }
 
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
@@ -69,13 +74,9 @@ impl Collectible {
             x: self.position.x + self.size / 2.0,
             y: self.position.y + self.size / 2.0,
         };
-        let offset_range = 10.0; // Define a range for the random offset
-        let color = Color::new(1.0, 1.0, 1.0, 1.0); // White color
-        let duration = 0.4; // Duration for each smoke effect
-
-        for _ in 0..4 {
+        for _ in 0..5 {
             if let Some(inactive_effect) = smoke_effect_pool.iter_mut().find(|e| !e.is_active()) {
-                inactive_effect.activate(base_position, offset_range, color, duration);
+                inactive_effect.activate(base_position);
             }
         }
     }
@@ -126,4 +127,60 @@ fn create_circle_mesh(ctx: &mut Context, size: f32) -> GameResult<Mesh> {
         0.1, // Smoothness of the circle
         Color::WHITE,
     )
+}
+fn create_amorphous_mesh(ctx: &mut Context, size: f32, noise: &Perlin, time: f32) -> GameResult<Mesh> {
+    let mut builder = MeshBuilder::new();
+    let num_points = 50;
+    let angle_step = 2.0 * std::f32::consts::PI / num_points as f32;
+
+    let noise_scale = 0.5; // How "zoomed in" you are on the noise
+    let time_scale = 0.1; // How fast the noise changes over time
+    let max_allowed_variation: f32 = size * 0.05; // Maximum change allowed between points
+
+    let mut prev_radius = size / 2.0; // Start with the base radius
+    let mut points = Vec::new();
+
+    let mut angle: f32 = 0.0; // Explicitly specify the type as f32
+
+    for _ in 0..num_points {
+        // Calculate the noise sample coordinates
+        let noise_x = (angle.cos() * noise_scale + time * time_scale) as f64;
+        let noise_y = (angle.sin() * noise_scale + time * time_scale) as f64;
+
+        // Sample the noise function to get the radius variation
+        let radius_variation: f32 = noise.get([noise_x, noise_y]) as f32;
+        let base_radius = size / 2.0;
+        let mut new_radius = base_radius + radius_variation * size * 0.2;
+
+        // Enforce the max allowed variation for a smoother shape
+        let radius_change = new_radius - prev_radius;
+        if radius_change.abs() > max_allowed_variation {
+            new_radius = if radius_change > 0.0 {
+                prev_radius + max_allowed_variation
+            } else {
+                prev_radius - max_allowed_variation
+            };
+        }
+
+        // Calculate the position of the current point
+        let x = new_radius * angle.cos();
+        let y = new_radius * angle.sin();
+
+        // Add this point to the points vector
+        points.push(Point2 { x, y });
+
+        // Update prev_radius for the next iteration
+        prev_radius = new_radius;
+
+        // Increment the angle for the next point
+        angle += angle_step;
+    }
+    // Connect the last point to the first to close the shape
+    builder.polygon(
+        DrawMode::fill(),
+        &points,
+        Color::from_rgb(255, 255, 255) // Use a white color for the filled polygon
+    )?;
+
+    builder.build(ctx)
 }
