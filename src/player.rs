@@ -6,6 +6,10 @@ pub const MOVEMENT_SPEED: f32 = 1000.0;
 pub const CIRCLE_SMOOTHNESS: f32 = 0.1;
 pub const MAX_CIRCLE_RADIUS: f32 = 50.0;
 pub const MIN_CIRCLE_RADIUS: f32 = 40.0;
+pub const CIRCLE_RADIUS: f32 = 45.0;
+pub const PLAYER_START_X_POS: f32 = 500.0;
+pub const PLAYER_START_Y_POS: f32 = 500.0;
+pub const PLAYER_ACCELERATION: f32 = 2000.0;
 pub struct Player {
     pub position: mint::Point2<f32>,
     pub rotation: f32,
@@ -20,14 +24,14 @@ pub struct Player {
 impl Player {
     pub fn new() -> Self {
         Player {
-            position: mint::Point2 { x: 400.0, y: 300.0 },
+            position: mint::Point2 { x: PLAYER_START_X_POS, y: PLAYER_START_Y_POS },
             rotation: 0.0,
             axis_left: (0.0, 0.0),
             axis_right: (0.0, 0.0),
             speed: 0.0,
-            acceleration: 2000.0, // Adjust this value as needed
+            acceleration: PLAYER_ACCELERATION, // Adjust this value as needed
             max_speed: MOVEMENT_SPEED,
-            radius: 45.0,
+            radius: CIRCLE_RADIUS,
         }
     }
 
