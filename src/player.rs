@@ -68,8 +68,8 @@ impl Player {
     }
 
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
-        let radius = self.calculate_radius();
-        let color = self.calculate_color();
+        let radius = self.radius_based_on_speed();
+        let color = self.color_based_on_speed();
 
         // Drawing the player
         let circle = graphics::Mesh::new_circle(
@@ -91,14 +91,14 @@ impl Player {
         )
     }
 
-    fn calculate_radius(&self) -> f32 {
+    fn radius_based_on_speed(&self) -> f32 {
         let max_radius = MAX_CIRCLE_RADIUS;
         let min_radius = MIN_CIRCLE_RADIUS;
         let radius_factor = self.speed / self.max_speed;
         max_radius - (max_radius - min_radius) * radius_factor
     }
 
-    fn calculate_color(&self) -> graphics::Color {
+    fn color_based_on_speed(&self) -> graphics::Color {
         let white = graphics::Color::from_rgb(115, 215, 255);
         let yellow = graphics::Color::from_rgb(215, 255, 0);
         let factor = self.speed / self.max_speed;

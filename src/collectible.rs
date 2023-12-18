@@ -1,5 +1,5 @@
 use crate::collidable::Collidable;
-use crate::flash_effect::FlashEffect;
+use crate::smoke_effect::SmokeEffect;
 use ggez::graphics::{self, Color, Mesh, DrawMode, Rect};
 use ggez::{Context, GameResult};
 use mint::Point2;
@@ -64,29 +64,18 @@ impl Collectible {
         )
     }
 
-    pub fn activate_flash_effect(&self, flash_effect_pool: &mut Vec<FlashEffect>) {
-        let mut rng = rand::thread_rng();
+    pub fn activate_smoke_effect(&self, smoke_effect_pool: &mut Vec<SmokeEffect>) {
+        let base_position = Point2 {
+            x: self.position.x + self.size / 2.0,
+            y: self.position.y + self.size / 2.0,
+        };
+        let offset_range = 10.0; // Define a range for the random offset
+        let color = Color::new(1.0, 1.0, 1.0, 1.0); // White color
+        let duration = 0.4; // Duration for each smoke effect
+
         for _ in 0..4 {
-            if let Some(inactive_effect) = flash_effect_pool.iter_mut().find(|e| !e.is_active()) {
-                let base_adjusted_position = Point2 {
-                    x: self.position.x + self.size / 2.0,
-                    y: self.position.y + self.size / 2.0,
-                };
-
-                let offset_x: f32 = rng.gen_range(-10.0..10.0);
-                let offset_y: f32 = rng.gen_range(-10.0..10.0);
-
-                let random_adjusted_position = Point2 {
-                    x: base_adjusted_position.x + offset_x,
-                    y: base_adjusted_position.y + offset_y,
-                };
-                let random_duration: f32 = rng.gen_range(0.1..0.4);
-
-                inactive_effect.activate(
-                    random_adjusted_position,
-                    Color::new(1.0, 1.0, 1.0, 1.0),
-                    random_duration,
-                );
+            if let Some(inactive_effect) = smoke_effect_pool.iter_mut().find(|e| !e.is_active()) {
+                inactive_effect.activate(base_position, offset_range, color, duration);
             }
         }
     }

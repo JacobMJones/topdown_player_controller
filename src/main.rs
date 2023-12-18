@@ -1,7 +1,7 @@
 mod player;
 mod main_state;
 mod collectible;
-mod flash_effect;
+mod smoke_effect;
 mod proximity_and_collision_handler;
 mod event_handler;
 mod collidable;

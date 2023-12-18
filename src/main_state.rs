@@ -1,6 +1,6 @@
 use rand::Rng; 
 use crate::proximity_and_collision_handler::handle_proximity_and_collisions;
-use crate::flash_effect::FlashEffect;
+use crate::smoke_effect::SmokeEffect;
 use crate::player::Player;
 use crate::collectible::Collectible;
 use crate::collidable::Collidable;
@@ -14,7 +14,7 @@ pub struct MainState {
     event_handler: EventHandler,
     player: Player,
     collectibles: Vec<Collectible>,
-    flash_effect_pool: Vec<FlashEffect>,
+    smoke_effect_pool: Vec<SmokeEffect>,
 }
 
 impl MainState {
@@ -45,14 +45,14 @@ impl MainState {
             let id = format!("collect{}", i);
             collectibles.push(Collectible::new(ctx, x, y, 50.0, initial_time, id)?);
         }
-        //Initialize multiple flash effects and put them into a pool
-        let mut flash_effect_pool = Vec::new();
+        //Initialize multiple smoke effects and put them into a pool
+        let mut smoke_effect_pool = Vec::new();
         for _ in 0..30 { // For example, pre-create 10 effects
-            flash_effect_pool.push(FlashEffect::new_inactive()); 
+            smoke_effect_pool.push(SmokeEffect::new_inactive()); 
         }   
 
         let player = Player::new();
-        Ok(MainState {event_handler, player, collectibles, flash_effect_pool })
+        Ok(MainState {event_handler, player, collectibles, smoke_effect_pool })
     }
 }
 
@@ -101,7 +101,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
         // Remove the collectibles that collided
         for index in to_remove.iter().rev() {
             if let Some(collectible) = self.collectibles.get_mut(*index) {
-                collectible.activate_flash_effect(&mut self.flash_effect_pool);
+                collectible.activate_smoke_effect(&mut self.smoke_effect_pool);
                 self.collectibles.remove(*index);
             }
         }
@@ -111,8 +111,8 @@ impl event::EventHandler<ggez::GameError> for MainState {
             collectible.update(dt); 
         }
 
-        // Update all flash effects
-        for effect in &mut self.flash_effect_pool {
+        // Update all smoke effects
+        for effect in &mut self.smoke_effect_pool {
             effect.update(dt);
         }
 
@@ -130,8 +130,8 @@ impl event::EventHandler<ggez::GameError> for MainState {
             collectible.draw(ctx)?;
         }
 
-        // Draw each active flash effect
-        for effect in &self.flash_effect_pool {
+        // Draw each active smoke effect
+        for effect in &self.smoke_effect_pool {
             if effect.is_active() {
                 effect.draw(ctx)?;
             }
