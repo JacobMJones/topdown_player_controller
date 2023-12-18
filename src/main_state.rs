@@ -26,20 +26,20 @@ impl MainState {
         // Initialize multiple collectibles with random positions
         let cluster_points = vec![
             (1000.0, 1000.0), // Example cluster center
-            (500.0, 1500.0),  // Another cluster center
+            (500.0, 2000.0),  // Another cluster center
             // Add more cluster centers as needed
         ];
 
         let mut collectibles = Vec::new();
         let mut rng = rand::thread_rng();
 
-        for i in 0..3000 {
+        for i in 0..10000 {
             // Choose a random cluster point
             let (center_x, center_y) = cluster_points[rng.gen_range(0..cluster_points.len())];
 
             // Generate positions near the cluster point
-            let x = rng.gen_range(center_x - 200.0..center_x + 200.0); // Adjust range for clustering
-            let y = rng.gen_range(center_y - 200.0..center_y + 200.0); // Adjust range for clustering
+            let x = rng.gen_range(center_x - 1000.0..center_x + 1000.0); // Adjust range for clustering
+            let y = rng.gen_range(center_y - 1000.0..center_y + 1000.0); // Adjust range for clustering
 
             let initial_time = rng.gen_range(0.0..6.28);
             let id = format!("collect{}", i);

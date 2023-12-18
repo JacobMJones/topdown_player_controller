@@ -22,7 +22,7 @@ impl Collectible {
             DrawMode::fill(),
             Point2 { x: 0.0, y: 0.0 },
             size / 2.0,
-            2.0, // this controls the 'smoothness' of the circle
+            0.1, // this controls the 'smoothness' of the circle
             Color::WHITE,
         )?;
 
