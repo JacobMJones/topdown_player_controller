@@ -10,6 +10,7 @@ pub const CIRCLE_RADIUS: f32 = 45.0;
 pub const PLAYER_START_X_POS: f32 = 500.0;
 pub const PLAYER_START_Y_POS: f32 = 500.0;
 pub const PLAYER_ACCELERATION: f32 = 2000.0;
+
 pub struct Player {
     pub position: mint::Point2<f32>,
     pub rotation: f32,
@@ -75,9 +76,9 @@ impl Player {
             ctx,
             graphics::DrawMode::fill(),
             mint::Point2 { x: 0.0, y: 0.0 },
-            radius,  // Use the calculated radius
+            radius,  
             CIRCLE_SMOOTHNESS,
-            color,   // Use the calculated color
+            color,   
         )?;
 
         graphics::draw(
@@ -100,7 +101,6 @@ impl Player {
     fn calculate_color(&self) -> graphics::Color {
         let white = graphics::Color::from_rgb(115, 215, 255);
         let yellow = graphics::Color::from_rgb(215, 255, 0);
-
         let factor = self.speed / self.max_speed;
         graphics::Color::new(
             white.r + (yellow.r - white.r) * factor,
