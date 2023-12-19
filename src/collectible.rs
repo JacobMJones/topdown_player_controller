@@ -42,7 +42,8 @@ impl Collectible {
 
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         if self.active {
-            let size = self.get_pulsating_size();
+           // let size = self.get_pulsating_size();
+           let size = self.size;
             let color = self.get_dynamic_color();
 
             let scale_x = size / self.size;
@@ -81,29 +82,19 @@ impl Collectible {
         }
     }
 
-    fn get_pulsating_size(&self) -> f32 {
-        let pulsation_factor = 0.9;
-        let min_size = 10.0;
-        let max_size = self.size;
-        let mut pulsating_size = self.size + pulsation_factor * self.time.sin();
-
-        if pulsating_size < min_size {
-            pulsating_size = min_size + (min_size - pulsating_size);
-        } else if pulsating_size > max_size {
-            pulsating_size = max_size - (pulsating_size - max_size);
-        }
-
-        pulsating_size
-    }
-
+    
     fn get_dynamic_color(&self) -> Color {
         if !self.in_proximity {
+            let g = ((self.time + 0.6).sin() * 0.5 + 0.15) as f32;
+            let b = ((self.time + 2.0).sin() * 0.15 + 0.5) as f32;
             let r = (self.time.sin() * 0.5 + 0.5) as f32;
-            let g = ((self.time + 2.0).sin() * 0.5 + 0.5) as f32;
-            let b = ((self.time + 4.0).sin() * 0.5 + 0.5) as f32;
-            Color::new(r, g, b, 1.0)
+            Color::new(1.0, 0.4, 1.0, 1.0)
+
+            
+
+            // Color::new(r, g, b, 1.0)
         } else {
-            Color::new(1.0, 1.0, 1.0, 0.1)
+            Color::new(1.0, 0.2, 1.0, 0.1)
         }
     }
 
@@ -130,57 +121,58 @@ fn create_circle_mesh(ctx: &mut Context, size: f32) -> GameResult<Mesh> {
 }
 fn create_amorphous_mesh(ctx: &mut Context, size: f32, noise: &Perlin, time: f32) -> GameResult<Mesh> {
     let mut builder = MeshBuilder::new();
-    let num_points = 50;
+    let num_points = 100;
     let angle_step = 2.0 * std::f32::consts::PI / num_points as f32;
 
-    let noise_scale = 0.5; // How "zoomed in" you are on the noise
-    let time_scale = 0.1; // How fast the noise changes over time
-    let max_allowed_variation: f32 = size * 0.05; // Maximum change allowed between points
-
-    let mut prev_radius = size / 2.0; // Start with the base radius
+    let noise_scale = 0.52;
+    let time_scale = 0.6;
     let mut points = Vec::new();
 
-    let mut angle: f32 = 0.0; // Explicitly specify the type as f32
+    let base_radius = size / 2.0; // Half of the collectible size
+    let min_radius = base_radius * 0.8; // Minimum radius is 80% of base radius
+    let noise_amplitude = base_radius * 0.2; 
 
-    for _ in 0..num_points {
-        // Calculate the noise sample coordinates
+    // First pass: calculate points for the blob
+    for i in 0..num_points {
+        let angle = i as f32 * angle_step;
         let noise_x = (angle.cos() * noise_scale + time * time_scale) as f64;
         let noise_y = (angle.sin() * noise_scale + time * time_scale) as f64;
-
-        // Sample the noise function to get the radius variation
-        let radius_variation: f32 = noise.get([noise_x, noise_y]) as f32;
-        let base_radius = size / 2.0;
-        let mut new_radius = base_radius + radius_variation * size * 0.2;
-
-        // Enforce the max allowed variation for a smoother shape
-        let radius_change = new_radius - prev_radius;
-        if radius_change.abs() > max_allowed_variation {
-            new_radius = if radius_change > 0.0 {
-                prev_radius + max_allowed_variation
-            } else {
-                prev_radius - max_allowed_variation
-            };
-        }
-
-        // Calculate the position of the current point
-        let x = new_radius * angle.cos();
-        let y = new_radius * angle.sin();
-
-        // Add this point to the points vector
+        let noise_value = noise.get([noise_x, noise_y]) as f32;
+        let radius = size / 2.0 + noise_value * size;
+        let noise_offset = noise_value * noise_amplitude;
+        let radius = (base_radius + noise_offset).max(min_radius);
+        let x = radius * angle.cos();
+        let y = radius * angle.sin();
         points.push(Point2 { x, y });
-
-        // Update prev_radius for the next iteration
-        prev_radius = new_radius;
-
-        // Increment the angle for the next point
-        angle += angle_step;
     }
-    // Connect the last point to the first to close the shape
+
+    // Second pass: smooth the points
+    let smoothed_points = smooth_points(&points);
+
+    // Build the polygon with smoothed points
     builder.polygon(
         DrawMode::fill(),
-        &points,
-        Color::from_rgb(255, 255, 255) // Use a white color for the filled polygon
+        &smoothed_points,
+        Color::from_rgb(255, 255, 255), // Use a white color for the filled polygon
     )?;
 
     builder.build(ctx)
+}
+
+fn smooth_points(points: &[Point2<f32>]) -> Vec<Point2<f32>> {
+    let len = points.len();
+    let mut smoothed_points = Vec::with_capacity(len);
+
+    for i in 0..len {
+        let prev = if i == 0 { points[len - 1] } else { points[i - 1] };
+        let next = if i == len - 1 { points[0] } else { points[i + 1] };
+        let current = points[i];
+
+        let avg_x = (prev.x + current.x + next.x) / 3.0;
+        let avg_y = (prev.y + current.y + next.y) / 3.0;
+
+        smoothed_points.push(Point2 { x: avg_x, y: avg_y });
+    }
+
+    smoothed_points
 }

@@ -25,25 +25,27 @@ impl MainState {
         let event_handler = EventHandler::new(gilrs);     
         // Initialize multiple collectibles with random positions
         let cluster_points = vec![
-            (1000.0, 1000.0), // Example cluster center
-            (500.0, 2000.0),  // Another cluster center
-            // Add more cluster centers as needed
+            (50.0, 60.0), // Example cluster center
+            // (1100.0, 1000.0), // Example cluster center
+            // (10.0, 1000.0), // Example cluster center
+            // (200.0, 10.0), // Example cluster center
+            // (500.0, 1330.0), // Example cluster center
         ];
 
         let mut collectibles = Vec::new();
         let mut rng = rand::thread_rng();
 
-        for i in 0..1000 {
+        for i in 0..1{
             // Choose a random cluster point
             let (center_x, center_y) = cluster_points[rng.gen_range(0..cluster_points.len())];
 
             // Generate positions near the cluster point
-            let x = rng.gen_range(center_x - 1000.0..center_x + 1000.0); // Adjust range for clustering
-            let y = rng.gen_range(center_y - 1000.0..center_y + 1000.0); // Adjust range for clustering
+            let x = rng.gen_range(center_x - 5.0..center_x + 5.0); // Adjust range for clustering
+            let y = rng.gen_range(center_y - 5.0..center_y + 5.0); // Adjust range for clustering
 
             let initial_time = rng.gen_range(0.0..6.28);
             let id = format!("collect{}", i);
-            collectibles.push(Collectible::new(ctx, x, y, 150.0, initial_time, id)?);
+            collectibles.push(Collectible::new(ctx, x, y, 80.0, initial_time, id)?);
         }
         //Initialize multiple smoke effects and put them into a pool
         let mut smoke_effect_pool = Vec::new();
