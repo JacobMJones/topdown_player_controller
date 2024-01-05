@@ -4,49 +4,65 @@ use crate::smoke_effect::SmokeEffect;
 use crate::player::Player;
 use crate::collectible::Collectible;
 use crate::collidable::Collidable;
-
 use ggez::{event, graphics, Context, GameResult};
 use gilrs::Gilrs;
-
 use crate::event_handler::EventHandler;
+const SCREEN_WIDTH: f32 = 1000.0;
+const SCREEN_HEIGHT: f32 = 1000.0;
+
+const CLUSTER_POINTS: &[(f32, f32); 5] = &[
+    (SCREEN_WIDTH * 0.15, SCREEN_HEIGHT * 0.16),   // Example near the top-left
+    (SCREEN_WIDTH * 0.8, SCREEN_HEIGHT * 0.8),     // Example near the bottom-right
+    (SCREEN_WIDTH * 0.01, SCREEN_HEIGHT * 0.8),    // Example near the bottom-left
+    (SCREEN_WIDTH * 0.2, SCREEN_HEIGHT * 0.01),    // Example near the top-center
+    (SCREEN_WIDTH * 0.5, SCREEN_HEIGHT * 0.8),     // Example near the middle-right
+];
+const COLLECTIBLE_COUNT: i32 = 300;
+const CLUSTER_SIZE: f32 = 100.0;
 
 pub struct MainState {
     event_handler: EventHandler,
     player: Player,
     collectibles: Vec<Collectible>,
     smoke_effect_pool: Vec<SmokeEffect>,
+    screen_width: f32,
+    screen_height: f32,
 }
 
 impl MainState {
-    pub fn new(ctx: &mut Context) -> GameResult<MainState> {
+    pub fn new(ctx: &mut Context, screen_width: f32, screen_height: f32) -> GameResult<MainState> {
+
+        let cluster_points: &[(f32, f32); 5] = &[
+            (screen_width * 0.15, screen_height * 0.16),  // Adjust these as necessary
+            (screen_width * 0.8, screen_height * 0.8),
+            (screen_width * 0.01, screen_height * 0.8),
+            (screen_width * 0.2, screen_height * 0.01),
+            (screen_width * 0.5, screen_height * 0.8),
+        ];
         //gamepad
         let gilrs = Gilrs::new().unwrap();
         //gamepad events
-        let event_handler = EventHandler::new(gilrs);     
-        // Initialize multiple collectibles with random positions
-        let cluster_points = vec![
-            (50.0, 60.0), // Example cluster center
-            // (1100.0, 1000.0), // Example cluster center
-            // (10.0, 1000.0), // Example cluster center
-            // (200.0, 10.0), // Example cluster center
-            // (500.0, 1330.0), // Example cluster center
-        ];
+        let event_handler = EventHandler::new(gilrs);   
 
+        // Initialize multiple collectibles with random positions
         let mut collectibles = Vec::new();
         let mut rng = rand::thread_rng();
 
-        for i in 0..1{
+        for i in 0..COLLECTIBLE_COUNT{
             // Choose a random cluster point
-            let (center_x, center_y) = cluster_points[rng.gen_range(0..cluster_points.len())];
+            let (center_x, center_y) = CLUSTER_POINTS[rng.gen_range(0..CLUSTER_POINTS.len())];
 
             // Generate positions near the cluster point
-            let x = rng.gen_range(center_x - 5.0..center_x + 5.0); // Adjust range for clustering
-            let y = rng.gen_range(center_y - 5.0..center_y + 5.0); // Adjust range for clustering
-
+            let x = rng.gen_range(center_x as f32 - CLUSTER_SIZE..=center_x as f32 + CLUSTER_SIZE).clamp(50.0, 2000.0);
+            let y = rng.gen_range(center_y as f32 - CLUSTER_SIZE..=center_y as f32 + CLUSTER_SIZE).clamp(50.0, 2000.0);
+            
+            //adds randomness to shapeshifting startpoint
             let initial_time = rng.gen_range(0.0..6.28);
+
             let id = format!("collect{}", i);
-            collectibles.push(Collectible::new(ctx, x, y, 80.0, initial_time, id)?);
+            collectibles.push(Collectible::new(ctx, x, y, 70.0, initial_time, id, false)?);
         }
+
         //Initialize multiple smoke effects and put them into a pool
         let mut smoke_effect_pool = Vec::new();
         for _ in 0..30 { // For example, pre-create 10 effects
@@ -54,7 +70,13 @@ impl MainState {
         }   
 
         let player = Player::new();
-        Ok(MainState {event_handler, player, collectibles, smoke_effect_pool })
+        Ok(MainState {
+            event_handler, 
+            player, 
+            collectibles, 
+            smoke_effect_pool,            
+            screen_width,
+            screen_height, })
     }
 }
 
@@ -67,7 +89,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
         self.event_handler.process_events(&mut self.player);
 
         // Define the proximity threshold for collectibles
-        const PROXIMITY_THRESHOLD: f32 = 300.0;
+        const PROXIMITY_THRESHOLD: f32 = 500.0;
 
         // Get a trait object for player as collidable
         let player_collidable: &dyn Collidable = &self.player;

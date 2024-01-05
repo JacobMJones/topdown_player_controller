@@ -18,9 +18,9 @@ pub struct Collectible {
 }
 
 impl Collectible {
-    pub fn new(ctx: &mut Context, x: f32, y: f32, size: f32, initial_time: f32, id: String) -> GameResult<Self> {
+    pub fn new(ctx: &mut Context, x: f32, y: f32, size: f32, initial_time: f32, id: String, in_proximity: bool) -> GameResult<Self> {
         let noise = Perlin::new();
-        let mesh = create_amorphous_mesh(ctx, size, &noise, initial_time)?;
+        let mesh = create_amorphous_mesh(ctx, size, &noise, initial_time, in_proximity)?;
         Ok(Collectible {
             position: Point2 { x, y },
             size,
@@ -36,7 +36,7 @@ impl Collectible {
 
     pub fn update(&mut self, ctx: &mut Context, dt: f32) -> GameResult<()> {
         self.time += dt;
-        self.mesh = create_amorphous_mesh(ctx, self.size, &self.noise, self.time)?;
+        self.mesh = create_amorphous_mesh(ctx, self.size, &self.noise, self.time, self.in_proximity)?;
         Ok(())
     }
 
@@ -85,16 +85,19 @@ impl Collectible {
     
     fn get_dynamic_color(&self) -> Color {
         if !self.in_proximity {
-            let g = ((self.time + 0.6).sin() * 0.5 + 0.15) as f32;
-            let b = ((self.time + 2.0).sin() * 0.15 + 0.5) as f32;
-            let r = (self.time.sin() * 0.5 + 0.5) as f32;
-            Color::new(1.0, 0.4, 1.0, 1.0)
+            let g = ((self.time.sin() * 0.25 + 0.75) * 0.5 + 0.5) as f32;
+            let b = 0.0 as f32;
+            let r = 1.0 as f32;
+           // Color::new(1.0, 0.4, 1.0, 1.0)
 
             
 
-            // Color::new(r, g, b, 1.0)
+             Color::new(r, g, b, 1.0)
         } else {
-            Color::new(1.0, 0.2, 1.0, 0.1)
+            let g = ((self.time.sin() * 0.25 + 0.75) * 0.5 + 0.5) as f32;
+            let b = 1.0 as f32;
+            let r = 0.0 as f32;
+            Color::new(r,g, 1.0, 1.0)
         }
     }
 
@@ -109,28 +112,19 @@ impl Collidable for Collectible {
     }
 }
 
-fn create_circle_mesh(ctx: &mut Context, size: f32) -> GameResult<Mesh> {
-    graphics::Mesh::new_circle(
-        ctx,
-        DrawMode::fill(),
-        Point2 { x: 0.0, y: 0.0 },
-        size / 2.0,
-        0.1, // Smoothness of the circle
-        Color::WHITE,
-    )
-}
-fn create_amorphous_mesh(ctx: &mut Context, size: f32, noise: &Perlin, time: f32) -> GameResult<Mesh> {
+fn create_amorphous_mesh(ctx: &mut Context, size: f32, noise: &Perlin, time: f32, in_proximity: bool) -> GameResult<Mesh> {
     let mut builder = MeshBuilder::new();
-    let num_points = 100;
-    let angle_step = 2.0 * std::f32::consts::PI / num_points as f32;
+    let num_points = 40;
+    let angle_step = 2.1 * std::f32::consts::PI / num_points as f32;
 
-    let noise_scale = 0.52;
-    let time_scale = 0.6;
+    let noise_scale = if in_proximity { 0.6 } else { 0.1 };
+    let time_scale = if in_proximity { 0.7 } else { 0.2 };
+    
     let mut points = Vec::new();
 
     let base_radius = size / 2.0; // Half of the collectible size
-    let min_radius = base_radius * 0.8; // Minimum radius is 80% of base radius
-    let noise_amplitude = base_radius * 0.2; 
+    let min_radius = base_radius * 0.4; // Minimum radius is 80% of base radius
+    let noise_amplitude = base_radius * 0.6; 
 
     // First pass: calculate points for the blob
     for i in 0..num_points {
@@ -138,7 +132,6 @@ fn create_amorphous_mesh(ctx: &mut Context, size: f32, noise: &Perlin, time: f32
         let noise_x = (angle.cos() * noise_scale + time * time_scale) as f64;
         let noise_y = (angle.sin() * noise_scale + time * time_scale) as f64;
         let noise_value = noise.get([noise_x, noise_y]) as f32;
-        let radius = size / 2.0 + noise_value * size;
         let noise_offset = noise_value * noise_amplitude;
         let radius = (base_radius + noise_offset).max(min_radius);
         let x = radius * angle.cos();

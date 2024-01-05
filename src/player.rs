@@ -5,8 +5,8 @@ use ggez::graphics::Rect;
 
 pub const MOVEMENT_SPEED: f32 = 1000.0;
 pub const CIRCLE_SMOOTHNESS: f32 = 0.1;
-pub const MAX_CIRCLE_RADIUS: f32 = 90.0;
-pub const MIN_CIRCLE_RADIUS: f32 = 80.0;
+pub const MAX_CIRCLE_RADIUS: f32 = 50.0;
+pub const MIN_CIRCLE_RADIUS: f32 = 46.0;
 pub const CIRCLE_RADIUS: f32 = 45.0;
 pub const PLAYER_START_X_POS: f32 = 500.0;
 pub const PLAYER_START_Y_POS: f32 = 500.0;
