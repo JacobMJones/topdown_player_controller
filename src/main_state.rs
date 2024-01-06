@@ -8,7 +8,7 @@ use ggez::{event, graphics, Context, GameResult};
 use gilrs::Gilrs;
 use rand::Rng;
 const COLLECTIBLE_SIZE: f32 = 100.0;
-const COLLECTIBLE_COUNT: i32 = 1;
+const COLLECTIBLE_COUNT: i32 = 1000;
 const CLUSTER_SIZE: f32 = 300.0;
 const PARTICLES_IN_SMOKE: i32 = 10;
 const PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD: f32 = 800.0;
@@ -105,13 +105,13 @@ impl event::EventHandler<ggez::GameError> for MainState {
             if distance < PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD / 2.0 {
                 // Assuming collectible_index is the index of the collectible in the collectibles vector
                 if let Some(collectible) = self.collectibles.get_mut(collectible_index) {
-                    collectible.update(ctx, dt, distance);
+                    collectible.update_distance(distance, PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD);
                     collectible.set_in_proximity(true, distance, PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD);
                 }
             } else {
                 // If the collectible is not in proximity, reset its in_proximity variable
                 if let Some(collectible) = self.collectibles.get_mut(collectible_index) {
-                    collectible.update(ctx, dt, distance);
+               //     collectible.update_distance(distance, PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD);
                     collectible.set_in_proximity(false, distance, PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD);
                 }
             }
@@ -129,9 +129,9 @@ impl event::EventHandler<ggez::GameError> for MainState {
             }
         }
         // Update each collectible
-        // for collectible in &mut self.collectibles {
-        //     collectible.update(ctx, dt, distance);
-        // }
+        for collectible in &mut self.collectibles {
+            collectible.update(ctx, dt);
+        }
         // Update all smoke effects
         for effect in &mut self.smoke_effect_pool {
             effect.update(dt);

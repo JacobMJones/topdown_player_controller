@@ -14,14 +14,15 @@ pub fn create_amorphous_mesh(
 ) -> GameResult<Mesh> {
     let mut builder = MeshBuilder::new();
 
+ 
     let num_points = 20;
     let angle_step = (2.0 * std::f32::consts::PI) / num_points as f32;
-    let (noise_scale_start, noise_scale_end) = (0.3, 0.6);  // not in proximity to in proximity
-    let (time_scale_start, time_scale_end) = (0.2, 0.6); 
-
-  let noise_scale = noise_scale_start + (noise_scale_end - noise_scale_start) * normalized_distance_from_player;
+    let (noise_scale_start, noise_scale_end) = (0.3, 0.7);  // not in proximity to in proximity
+    let (time_scale_start, time_scale_end) = (0.2, 0.25); 
+    let modulated_time = time.cos() * 4.0; 
+    let noise_scale = noise_scale_start + (noise_scale_end - noise_scale_start) * (normalized_distance_from_player *2.0);
     let time_scale = time_scale_start + (time_scale_end - time_scale_start) * normalized_distance_from_player;
-
+   // println!("noise_scale{}", noise_scale);
 
     let mut points = Vec::new();
 
@@ -32,8 +33,8 @@ pub fn create_amorphous_mesh(
     // First pass: calculate points for the blob
     for i in 0..num_points {
         let angle = i as f32 * angle_step;
-        let noise_x = (angle.cos() * noise_scale + time * time_scale) as f64;
-        let noise_y = (angle.sin() * noise_scale + time * time_scale) as f64;
+        let noise_x = (angle.cos() * noise_scale + modulated_time * time_scale) as f64;
+        let noise_y = (angle.sin() * noise_scale + modulated_time * time_scale) as f64;
         let noise_value = noise.get([noise_x, noise_y]) as f32;
         let noise_offset = noise_value * noise_amplitude;
         let radius = (base_radius + noise_offset).max(min_radius);

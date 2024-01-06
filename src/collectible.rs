@@ -55,10 +55,14 @@ impl Collectible {
         })
     }
 
-    pub fn update(&mut self, ctx: &mut Context, dt: f32, distance: f32) -> GameResult<()> {
-        self.time += dt;
+    pub fn update_distance(&mut self, distance: f32, max_distance_threshold:f32){
         self.distance_from_player = distance;
-        self.normalized_distance = 1.0 - (distance - 50.0) / (1000.0 - 50.0);
+        self.normalized_distance = 1.0 - (distance - 10.0) / (max_distance_threshold - 10.0);
+    }
+
+    pub fn update(&mut self, ctx: &mut Context, dt: f32) -> GameResult<()> {
+       // println!("distance from player {}", self.normalized_distance);
+        self.time += dt;
         self.mesh = amorphous_mesh_creator::create_amorphous_mesh(
             ctx,
             self.size,
@@ -69,7 +73,6 @@ impl Collectible {
         )?;
         Ok(())
     }
-
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         if self.active {
             graphics::draw(
@@ -83,14 +86,14 @@ impl Collectible {
 
             //draw eye
             let eased_distance = smootherstep(0.0, 1.0, self.normalized_distance);
-            let circle_radius = (self.size * eased_distance) / 8.0; 
-            let circle_color = Color::new(1.0, 1.0, 1.0, 0.8); 
+            let circle_radius = (self.size * eased_distance) / 10.0; 
+            let circle_color = Color::new(1.0, 1.0, 1.0, eased_distance); 
             let circle_mesh = MeshBuilder::new()
                 .circle(
                     DrawMode::fill(),
                     [0.0, 0.0], // Center of the circle, it will be positioned correctly by the .dest field
                     circle_radius,
-                    1.0, 
+                    0.2, 
                     circle_color,
                 )?
                 .build(ctx)?;
@@ -128,7 +131,7 @@ impl Collectible {
 
     fn get_dynamic_color(&self) -> Color {
         let check: f32 = 0.6 + (self.normalized_distance * 10.0);
-        // println!("check {}", check);
+      
         if !self.in_proximity {
             let g = ((self.time.sin() * 0.25 + 0.75) * 0.5 + 0.5) as f32;
             let b = 0.0 as f32;
@@ -136,16 +139,20 @@ impl Collectible {
 
             Color::new(r, g, b, 1.0)
         } else {
-            if check > 10.0 {
+           //close
+            if check < 10.0 {
+                
                 let g = ((self.time.sin() * 0.25 + 0.75) * 0.5 + 0.5) as f32;
                 let b = 1.0 as f32;
-                let r = self.normalized_distance as f32;
-                Color::new(r, g, 1.0, 1.0)
+                let r = 0.0;
+                Color::new(r, g, b, 0.3)
+            //very close    
             } else {
-                let g = self.normalized_distance as f32;
-                let b = 1.0 as f32;
-                let r = 0.0 as f32;
-                Color::new(r, g, 1.0, 1.0)
+
+                let g = 0.5;
+                let b = 0.5 as f32;
+                let r = 1.0 as f32;
+                Color::new(r, g, b, 0.8)
             }
         }
     }
