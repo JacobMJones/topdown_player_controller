@@ -13,15 +13,16 @@ pub struct Collectible {
     pub time: f32,
     pub id: String,
     pub in_proximity: bool,
+    pub distance_from_player: f32,
     mesh: Mesh,
     noise: Perlin,
 }
 
 impl Collectible {
-    pub fn new(ctx: &mut Context, x: f32, y: f32, size: f32, initial_time: f32, id: String, in_proximity: bool) -> GameResult<Self> {
+    pub fn new(ctx: &mut Context, x: f32, y: f32, size: f32, initial_time: f32, id: String, in_proximity: bool, distance_from_player:f32) -> GameResult<Self> {
         let noise = Perlin::new();
-        let mesh = create_amorphous_mesh(ctx, size, &noise, initial_time, in_proximity)?;
-        Ok(Collectible {
+        let mesh = create_amorphous_mesh(ctx, size, &noise, initial_time, in_proximity, distance_from_player)?;
+        Ok(Collectible { 
             position: Point2 { x, y },
             size,
             active: true,
@@ -29,6 +30,7 @@ impl Collectible {
             time: initial_time,
             id,
             in_proximity: false,
+            distance_from_player,
             mesh,
             noise
         })
@@ -36,19 +38,19 @@ impl Collectible {
 
     pub fn update(&mut self, ctx: &mut Context, dt: f32) -> GameResult<()> {
         self.time += dt;
-        self.mesh = create_amorphous_mesh(ctx, self.size, &self.noise, self.time, self.in_proximity)?;
+        self.mesh = create_amorphous_mesh(ctx, self.size, &self.noise, self.time, self.in_proximity, self.distance_from_player)?;
         Ok(())
     }
 
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         if self.active {
            // let size = self.get_pulsating_size();
-           let size = self.size;
+            let size = self.size;
             let color = self.get_dynamic_color();
 
             let scale_x = size / self.size;
             let scale_y = size / self.size;
-
+          
             graphics::draw(
                 ctx,
                 &self.mesh,
@@ -101,8 +103,11 @@ impl Collectible {
         }
     }
 
-    pub fn set_in_proximity(&mut self, in_proximity: bool) {
+    pub fn set_in_proximity(&mut self, in_proximity: bool, distance: f32) {
+        
         self.in_proximity = in_proximity;
+        //self.distance_from_player = distance
+        self.distance_from_player = 1.0 - (distance - 50.0) / (1000.0 - 50.0); //normalized between 1 and 0
     }
 }
 
@@ -112,19 +117,25 @@ impl Collidable for Collectible {
     }
 }
 
-fn create_amorphous_mesh(ctx: &mut Context, size: f32, noise: &Perlin, time: f32, in_proximity: bool) -> GameResult<Mesh> {
-    let mut builder = MeshBuilder::new();
-    let num_points = 40;
-    let angle_step = 2.1 * std::f32::consts::PI / num_points as f32;
+fn create_amorphous_mesh(ctx: &mut Context, size: f32, noise: &Perlin, time: f32, in_proximity: bool, distance_from_player:f32) -> GameResult<Mesh> {
+   
+    println!("in prox {}, distance {}", in_proximity, distance_from_player);
 
-    let noise_scale = if in_proximity { 0.6 } else { 0.1 };
-    let time_scale = if in_proximity { 0.7 } else { 0.2 };
+    let mut builder = MeshBuilder::new();
+     // Normalized between 0 and 1
+    
+    println!("distance from player {}", distance_from_player);
+    let num_points = 20;
+    let angle_step = (2.1) * std::f32::consts::PI / num_points as f32;
+
+    let noise_scale = if in_proximity { 0.6 } else { 0.3 };
+    let time_scale = if in_proximity { 0.6 + (distance_from_player/10.0)} else { 0.2 };
     
     let mut points = Vec::new();
 
-    let base_radius = size / 2.0; // Half of the collectible size
-    let min_radius = base_radius * 0.4; // Minimum radius is 80% of base radius
-    let noise_amplitude = base_radius * 0.6; 
+    let base_radius = 50.0; // 
+    let min_radius = base_radius * 0.4; 
+    let noise_amplitude = base_radius * distance_from_player; 
 
     // First pass: calculate points for the blob
     for i in 0..num_points {
@@ -136,6 +147,7 @@ fn create_amorphous_mesh(ctx: &mut Context, size: f32, noise: &Perlin, time: f32
         let radius = (base_radius + noise_offset).max(min_radius);
         let x = radius * angle.cos();
         let y = radius * angle.sin();
+        
         points.push(Point2 { x, y });
     }
 
@@ -146,7 +158,7 @@ fn create_amorphous_mesh(ctx: &mut Context, size: f32, noise: &Perlin, time: f32
     builder.polygon(
         DrawMode::fill(),
         &smoothed_points,
-        Color::from_rgb(255, 255, 255), // Use a white color for the filled polygon
+        Color::from_rgb(255, 255, 255), 
     )?;
 
     builder.build(ctx)

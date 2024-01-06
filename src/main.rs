@@ -9,8 +9,8 @@ use ggez::{conf, event, ContextBuilder};
 use main_state::MainState;
 const AUTHOR: &str = "badboyrenegade";
 const GAME_ID: &str = "top down";
-const SCREEN_WIDTH: f32 = 1000.0;
-const SCREEN_HEIGHT: f32 = 1000.0;
+const SCREEN_WIDTH: f32 = 1500.0;
+const SCREEN_HEIGHT: f32 = 1500.0;
 
 fn main() -> ggez::GameResult {
     let (mut ctx, event_loop) = ContextBuilder::new(GAME_ID, AUTHOR)

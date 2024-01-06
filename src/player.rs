@@ -10,7 +10,7 @@ pub const MIN_CIRCLE_RADIUS: f32 = 46.0;
 pub const CIRCLE_RADIUS: f32 = 45.0;
 pub const PLAYER_START_X_POS: f32 = 500.0;
 pub const PLAYER_START_Y_POS: f32 = 500.0;
-pub const PLAYER_ACCELERATION: f32 = 2000.0;
+pub const PLAYER_ACCELERATION: f32 = 1000.0;
 
 pub struct Player {
     pub position: mint::Point2<f32>,
@@ -118,8 +118,8 @@ impl Collidable for Player {
         graphics::Rect::new(
             self.position.x - self.radius,
             self.position.y - self.radius,
-            self.radius * 2.0,
-            self.radius * 2.0,
+            self.radius * 0.5,
+            self.radius * 0.5,
         )
     }
 }
