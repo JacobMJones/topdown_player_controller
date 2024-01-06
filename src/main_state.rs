@@ -106,13 +106,13 @@ impl event::EventHandler<ggez::GameError> for MainState {
                 // Assuming collectible_index is the index of the collectible in the collectibles vector
                 if let Some(collectible) = self.collectibles.get_mut(collectible_index) {
                     collectible.update(ctx, dt, distance);
-                    collectible.set_in_proximity(true, distance);
+                    collectible.set_in_proximity(true, distance, PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD);
                 }
             } else {
                 // If the collectible is not in proximity, reset its in_proximity variable
                 if let Some(collectible) = self.collectibles.get_mut(collectible_index) {
                     collectible.update(ctx, dt, distance);
-                    collectible.set_in_proximity(false, distance);
+                    collectible.set_in_proximity(false, distance, PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD);
                 }
             }
 

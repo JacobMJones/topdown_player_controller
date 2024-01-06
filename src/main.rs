@@ -2,6 +2,7 @@ mod player;
 mod main_state;
 mod collectible;
 mod smoke_effect;
+mod amorphous_mesh_creator;
 mod proximity_and_collision_handler;
 mod event_handler;
 mod collidable;
