@@ -1,74 +1,85 @@
-use rand::Rng; 
-use crate::proximity_and_collision_handler::handle_proximity_and_collisions;
-use crate::smoke_effect::SmokeEffect;
-use crate::player::Player;
 use crate::collectible::Collectible;
 use crate::collidable::Collidable;
+use crate::event_handler::EventHandler;
+use crate::player::Player;
+use crate::proximity_and_collision_handler::handle_proximity_and_collisions;
+use crate::smoke_effect::SmokeEffect;
 use ggez::{event, graphics, Context, GameResult};
 use gilrs::Gilrs;
-use crate::event_handler::EventHandler;
-const COLLECTIBLE_SIZE: f32 = 50.0;
-const COLLECTIBLE_COUNT: i32 = 400;
+use rand::Rng;
+const COLLECTIBLE_SIZE: f32 = 100.0;
+const COLLECTIBLE_COUNT: i32 = 1000;
 const CLUSTER_SIZE: f32 = 300.0;
 const PARTICLES_IN_SMOKE: i32 = 10;
-const PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD: f32 = 1200.0;
+const PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD: f32 = 800.0;
 pub struct MainState {
     event_handler: EventHandler,
     player: Player,
     collectibles: Vec<Collectible>,
-    smoke_effect_pool: Vec<SmokeEffect>
+    smoke_effect_pool: Vec<SmokeEffect>,
 }
 
 impl MainState {
     pub fn new(ctx: &mut Context, screen_width: f32, screen_height: f32) -> GameResult<MainState> {
-
         let cluster_points: &[(f32, f32); 5] = &[
-            (screen_width * 0.15, screen_height * 0.16),  
-            (screen_width * 0.8, screen_height * 0.8),
-            (screen_width * 0.01, screen_height * 0.8),
-            (screen_width * 0.2, screen_height * 0.01),
-            (screen_width * 0.5, screen_height * 0.8),
+            (screen_width * 0.15, screen_height * 0.16),
+            (screen_width * 0.12, screen_height * 0.3),
+            (screen_width * 0.2, screen_height * 0.5),
+            (screen_width * 0.3, screen_height * 0.2),
+            (screen_width * 0.4, screen_height * 0.8),
         ];
         //gamepad
         let gilrs = Gilrs::new().unwrap();
         //gamepad events
-        let event_handler = EventHandler::new(gilrs);   
+        let event_handler = EventHandler::new(gilrs);
 
         // Initialize multiple collectibles with random positions
         let mut collectibles = Vec::new();
         let mut rng = rand::thread_rng();
 
-        for i in 0..COLLECTIBLE_COUNT{
+        for i in 0..COLLECTIBLE_COUNT {
             // Choose a random cluster point
             let (center_x, center_y) = cluster_points[rng.gen_range(0..cluster_points.len())];
 
             // Generate positions near the cluster point
-            let x = rng.gen_range(center_x as f32 - CLUSTER_SIZE..=center_x as f32 + CLUSTER_SIZE).clamp(50.0, 2000.0);
-            let y = rng.gen_range(center_y as f32 - CLUSTER_SIZE..=center_y as f32 + CLUSTER_SIZE).clamp(50.0, 2000.0);
-            
+            let x = rng
+                .gen_range(center_x as f32 - CLUSTER_SIZE..=center_x as f32 + CLUSTER_SIZE)
+                .clamp(50.0, 2000.0);
+            let y = rng
+                .gen_range(center_y as f32 - CLUSTER_SIZE..=center_y as f32 + CLUSTER_SIZE)
+                .clamp(50.0, 2000.0);
+
             //adds randomness to shapeshifting startpoint
             let initial_time = rng.gen_range(0.0..6.28);
 
             let id = format!("collect{}", i);
-            collectibles.push(Collectible::new(ctx, x, y, COLLECTIBLE_SIZE, initial_time, id, false, 100.0)?);
+            collectibles.push(Collectible::new(
+                ctx,
+                x,
+                y,
+                COLLECTIBLE_SIZE,
+                initial_time,
+                id,
+                false,
+                100.0,
+            )?);
         }
 
         //Initialize multiple smoke effects and put them into a pool
         let mut smoke_effect_pool = Vec::new();
-        for _ in 0..PARTICLES_IN_SMOKE { 
-            smoke_effect_pool.push(SmokeEffect::new_inactive()); 
-        }   
+        for _ in 0..PARTICLES_IN_SMOKE {
+            smoke_effect_pool.push(SmokeEffect::new_inactive());
+        }
 
         let player = Player::new();
         Ok(MainState {
-            event_handler, 
-            player, 
-            collectibles, 
+            event_handler,
+            player,
+            collectibles,
             smoke_effect_pool,
-         })
+        })
     }
 }
-
 
 impl event::EventHandler<ggez::GameError> for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
@@ -82,28 +93,29 @@ impl event::EventHandler<ggez::GameError> for MainState {
 
         // Check for proximity and collisions
         let proximity_and_collisions = handle_proximity_and_collisions(
-            &[player_collidable], 
+            &[player_collidable],
             &self.collectibles.iter().collect::<Vec<&Collectible>>(),
-            PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD
+            PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD,
         );
 
         //set which collectibles should be removed due to collision
         let mut to_remove = Vec::new();
 
-
         for (_player_index, collectible_index, distance, is_collided) in proximity_and_collisions {
             if distance < PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD / 2.0 {
                 // Assuming collectible_index is the index of the collectible in the collectibles vector
                 if let Some(collectible) = self.collectibles.get_mut(collectible_index) {
+                    collectible.update(ctx, dt, distance);
                     collectible.set_in_proximity(true, distance);
                 }
             } else {
                 // If the collectible is not in proximity, reset its in_proximity variable
                 if let Some(collectible) = self.collectibles.get_mut(collectible_index) {
+                    collectible.update(ctx, dt, distance);
                     collectible.set_in_proximity(false, distance);
                 }
             }
-        
+
             if is_collided {
                 // Mark collided collectibles for removal
                 to_remove.push(collectible_index);
@@ -117,9 +129,9 @@ impl event::EventHandler<ggez::GameError> for MainState {
             }
         }
         // Update each collectible
-        for collectible in &mut self.collectibles {
-            collectible.update(ctx, dt);
-        }
+        // for collectible in &mut self.collectibles {
+        //     collectible.update(ctx, dt, distance);
+        // }
         // Update all smoke effects
         for effect in &mut self.smoke_effect_pool {
             effect.update(dt);
@@ -146,12 +158,6 @@ impl event::EventHandler<ggez::GameError> for MainState {
         // Draw the player
         self.player.draw(ctx)?;
 
-
         graphics::present(ctx)
     }
 }
-
-
-
-
-
