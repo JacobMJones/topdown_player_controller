@@ -25,13 +25,16 @@ impl Collectible {
         x: f32,
         y: f32,
         size: f32,
+        max_distance_threshold:f32,
         initial_time: f32,
         id: String,
         in_proximity: bool,
         distance_from_player: f32,
+        
     ) -> GameResult<Self> {
         let noise = Perlin::new();
-        let normalized_distance_from_player = 1.0 - (distance_from_player - 50.0) / (1000.0 - 50.0);
+        let normalized_distance_from_player = 0.01;
+       println!("{}",normalized_distance_from_player);
         let mesh = amorphous_mesh_creator::create_amorphous_mesh(
             ctx,
             size,

@@ -58,6 +58,7 @@ impl MainState {
                 x,
                 y,
                 COLLECTIBLE_SIZE,
+                PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD,
                 initial_time,
                 id,
                 false,
