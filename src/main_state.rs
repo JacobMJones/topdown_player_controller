@@ -8,7 +8,7 @@ use ggez::{event, graphics, Context, GameResult};
 use gilrs::Gilrs;
 use rand::Rng;
 const COLLECTIBLE_SIZE: f32 = 100.0;
-const COLLECTIBLE_COUNT: i32 = 1000;
+const COLLECTIBLE_COUNT: i32 = 200;
 const CLUSTER_SIZE: f32 = 300.0;
 const PARTICLES_IN_SMOKE: i32 = 10;
 const PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD: f32 = 800.0;
@@ -21,11 +21,11 @@ pub struct MainState {
 
 impl MainState {
     pub fn new(ctx: &mut Context, screen_width: f32, screen_height: f32) -> GameResult<MainState> {
-        let cluster_points: &[(f32, f32); 5] = &[
+        let cluster_points: &[(f32, f32); 2] = &[
             (screen_width * 0.15, screen_height * 0.16),
-            (screen_width * 0.12, screen_height * 0.3),
-            (screen_width * 0.2, screen_height * 0.5),
-            (screen_width * 0.3, screen_height * 0.2),
+            // (screen_width * 0.12, screen_height * 0.3),
+            // (screen_width * 0.2, screen_height * 0.5),
+            // (screen_width * 0.3, screen_height * 0.2),
             (screen_width * 0.4, screen_height * 0.8),
         ];
         //gamepad
@@ -131,6 +131,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
         }
         // Update each collectible
         for collectible in &mut self.collectibles {
+            collectible.player_direction = self.player.direction;
             collectible.update(ctx, dt);
         }
         // Update all smoke effects
@@ -148,7 +149,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
 
         // Draw each collectible
         for collectible in &self.collectibles {
-            collectible.draw(ctx)?;
+            collectible.draw(ctx, self.player.position)?;
         }
         // Draw each active smoke effect
         for effect in &self.smoke_effect_pool {

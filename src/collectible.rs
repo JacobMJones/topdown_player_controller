@@ -2,7 +2,7 @@ use crate::collidable::Collidable;
 use crate::smoke_effect::SmokeEffect;
 use ggez::graphics::{self, Color, DrawMode, Mesh, MeshBuilder, Rect};
 use ggez::{Context, GameResult};
-use mint::Point2;
+use mint::{Point2, Vector2};
 use noise::{NoiseFn, Perlin};
 use crate::amorphous_mesh_creator;
 pub struct Collectible {
@@ -17,6 +17,7 @@ pub struct Collectible {
     pub normalized_distance: f32, 
     mesh: Mesh,
     noise: Perlin,
+    pub player_direction: mint::Vector2<f32>,
 }
 
 impl Collectible {
@@ -34,7 +35,6 @@ impl Collectible {
     ) -> GameResult<Self> {
         let noise = Perlin::new();
         let normalized_distance_from_player = 0.01;
-       println!("{}",normalized_distance_from_player);
         let mesh = amorphous_mesh_creator::create_amorphous_mesh(
             ctx,
             size,
@@ -55,6 +55,7 @@ impl Collectible {
             normalized_distance: normalized_distance_from_player, 
             mesh,
             noise,
+            player_direction: Vector2 { x: 0.0, y: 0.0 },
         })
     }
 
@@ -64,7 +65,7 @@ impl Collectible {
     }
 
     pub fn update(&mut self, ctx: &mut Context, dt: f32) -> GameResult<()> {
-       // println!("distance from player {}", self.normalized_distance);
+      //  println!("distance from player {}, player direction {:?}", self.normalized_distance, self.player_direction);
         self.time += dt;
         self.mesh = amorphous_mesh_creator::create_amorphous_mesh(
             ctx,
@@ -76,8 +77,9 @@ impl Collectible {
         )?;
         Ok(())
     }
-    pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
+    pub fn draw(&self, ctx: &mut Context, player_position: mint::Point2<f32>) -> GameResult<()> {
         if self.active {
+            // Draw the collectible itself
             graphics::draw(
                 ctx,
                 &self.mesh,
@@ -87,26 +89,83 @@ impl Collectible {
                     .color(self.get_dynamic_color()), 
             )?;
 
-            //draw eye
+            // Tentacle setup
+            let to_player = Vector2 {
+                x: player_position.x - self.position.x,
+                y: player_position.y - self.position.y,
+            };
+
+            let distance_to_player = (to_player.x.powi(2) + to_player.y.powi(2)).sqrt();
+            let direction = if distance_to_player != 0.0 {
+                Vector2 {
+                    x: to_player.x / distance_to_player,
+                    y: to_player.y / distance_to_player,
+                }
+            } else {
+                to_player // If the player is exactly at the collectible position
+            };
+
+            let perp_direction = Vector2 { x: -direction.y, y: direction.x };
+
+            let max_tentacle_length = 250.0; // Maximum length the tentacle can be
+            let tentacle_length = distance_to_player.min(max_tentacle_length); 
+            // Create points for the tentacle with noise
+            let mut points = Vec::new();
+            for i in 0..=tentacle_length as usize {
+                let along = i as f32 / tentacle_length; // Normalized position along tentacle
+                let noise_value = self.noise.get([self.time as f64 + along as f64 * 2.0, 0.0]) as f32;
+                let noise_offset = noise_value * 23.0; // Scale the noise effect
+
+                // Calculate the vertex position with noise
+                let vertex = Point2 {
+                    x: self.position.x + direction.x * i as f32 + perp_direction.x * noise_offset,
+                    y: self.position.y + direction.y * i as f32 + perp_direction.y * noise_offset,
+                };
+                points.push(vertex);
+            }
+
+            // Build the tentacle mesh from the points
+            let tentacle_mesh = MeshBuilder::new()
+                .polyline(DrawMode::stroke(5.0), &points, Color::new(1.0, 0.65, 0.0, 1.0))?
+                .build(ctx)?;
+
+            // Draw the tentacle mesh
+            graphics::draw(ctx, &tentacle_mesh, graphics::DrawParam::default())?;
+
+            // Eye setup
+            let eye_movement_scale = 10.0; // Adjust this value as needed for the effect
+            let eye_offset = Vector2 {
+                x: direction.x * eye_movement_scale,
+                y: direction.y * eye_movement_scale,
+            };
+
+            let eye_position = Point2 {
+                x: self.position.x + eye_offset.x,
+                y: self.position.y + eye_offset.y,
+            };
+
+            // Draw eye
             let eased_distance = smootherstep(0.0, 1.0, self.normalized_distance);
             let circle_radius = (self.size * eased_distance) / 10.0; 
             let circle_color = Color::new(1.0, 1.0, 1.0, eased_distance); 
             let circle_mesh = MeshBuilder::new()
                 .circle(
                     DrawMode::fill(),
-                    [0.0, 0.0], // Center of the circle, it will be positioned correctly by the .dest field
+                    [0.0, 0.0], // Center of the circle
                     circle_radius,
                     0.2, 
                     circle_color,
                 )?
                 .build(ctx)?;
-
-            // Draw the circle mesh (eye)
+            
+            // Draw the circle mesh (eye) at the eye's calculated position
             graphics::draw(
                 ctx,
                 &circle_mesh,
-                graphics::DrawParam::default().dest([self.position.x, self.position.y]), // Position it at the collectible's center
+                graphics::DrawParam::default().dest([eye_position.x, eye_position.y]),
             )?;
+                 // Draw the tentacle mesh
+                 graphics::draw(ctx, &tentacle_mesh, graphics::DrawParam::default())?;
         }
         Ok(())
     }
