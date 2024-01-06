@@ -1,6 +1,5 @@
-use crate::collidable::Collidable;
-use crate::smoke_effect::SmokeEffect;
-use ggez::graphics::{self, Color, DrawMode, Mesh, MeshBuilder, Rect};
+
+use ggez::graphics::{self, Color, DrawMode, Mesh, MeshBuilder};
 use ggez::{Context, GameResult};
 use mint::Point2;
 use noise::{NoiseFn, Perlin};
@@ -11,7 +10,6 @@ pub fn create_amorphous_mesh(
     noise: &Perlin,
     time: f32,
     in_proximity: bool,
-    distance_from_player: f32,
     normalized_distance_from_player: f32,
 ) -> GameResult<Mesh> {
     let mut builder = MeshBuilder::new();

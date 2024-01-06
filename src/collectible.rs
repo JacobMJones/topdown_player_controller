@@ -38,7 +38,6 @@ impl Collectible {
             &noise,
             initial_time,
             in_proximity,
-            distance_from_player,
             normalized_distance_from_player, 
         )?;
         Ok(Collectible {
@@ -67,7 +66,6 @@ impl Collectible {
             &self.noise,
             self.time,
             self.in_proximity,
-            self.distance_from_player,
             self.normalized_distance, 
         )?;
         Ok(())
