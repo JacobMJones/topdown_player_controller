@@ -16,13 +16,12 @@ pub fn create_amorphous_mesh(
 
     let num_points = 20;
     let angle_step = (2.0 * std::f32::consts::PI) / num_points as f32;
+    let (noise_scale_start, noise_scale_end) = (0.3, 0.6);  // not in proximity to in proximity
+    let (time_scale_start, time_scale_end) = (0.2, 0.6); 
 
-    let noise_scale = if in_proximity { 0.6 } else { 0.3 };
-    let time_scale = if in_proximity {
-        0.6 + (normalized_distance_from_player / 10.0)
-    } else {
-        0.2
-    };
+  let noise_scale = noise_scale_start + (noise_scale_end - noise_scale_start) * normalized_distance_from_player;
+    let time_scale = time_scale_start + (time_scale_end - time_scale_start) * normalized_distance_from_player;
+
 
     let mut points = Vec::new();
 

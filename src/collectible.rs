@@ -59,7 +59,6 @@ impl Collectible {
         self.time += dt;
         self.distance_from_player = distance;
         self.normalized_distance = 1.0 - (distance - 50.0) / (1000.0 - 50.0);
-   
         self.mesh = amorphous_mesh_creator::create_amorphous_mesh(
             ctx,
             self.size,
@@ -154,7 +153,7 @@ impl Collectible {
     pub fn set_in_proximity(&mut self, in_proximity: bool, distance: f32, max: f32 ) {
         self.in_proximity = in_proximity;
         self.distance_from_player = distance; 
-        self.normalized_distance = 1.0 - (distance - 50.0) / (1000.0 - 50.0);
+        self.normalized_distance = 1.0 - (distance - 50.0) / (max - 50.0);
     }
 }
 

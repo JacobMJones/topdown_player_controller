@@ -678,6 +678,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "easer"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8dde460cecb776d6524d53ca7acf960561686a620d3791c0dc56c3ada406191a"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "either"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2780,6 +2789,7 @@ dependencies = [
 name = "top"
 version = "0.1.0"
 dependencies = [
+ "easer",
  "ggez",
  "gilrs 0.8.2",
  "mint",
