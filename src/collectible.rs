@@ -74,7 +74,6 @@ impl Collectible {
     pub fn update_distance(&mut self, distance: f32, max_distance_threshold: f32) {
         self.distance_from_player = distance;
         let clamped_distance = distance.clamp(10.0, max_distance_threshold);
-
         self.normalized_distance =
             1.0 - (clamped_distance - 10.0) / (max_distance_threshold - 10.0);
     }
@@ -97,21 +96,24 @@ impl Collectible {
         )?;
 
         self.color = get_dynamic_color(self.time, self.normalized_distance, self.in_proximity);
-        self.tentacle.update(
-            ctx,
-            player_position,
-            250.0,
-            self.normalized_distance,
-            self.time,
-            self.color,
-        )?;
-        //   self.eye.set_position( player_position, self.position);
+
+        // self.tentacle.update(
+        //     ctx,
+        //     player_position,
+        //     250.0,
+        //     self.normalized_distance,
+        //     self.time,
+        //     self.color,
+        // )?;
+
+      
+            self.eye.update(player_position, self.position, self.distance_from_player, self.in_proximity);
+       
+
         Ok(())
     }
     pub fn draw(&self, ctx: &mut Context, player_position: mint::Point2<f32>) -> GameResult<()> {
         if self.active {
-            // Draw the collectible itself
-           // let color = self.get_dynamic_color();
             graphics::draw(
                 ctx,
                 &self.mesh,
@@ -120,8 +122,11 @@ impl Collectible {
                     .scale([self.size / self.size, self.size / self.size])
                     .color(self.color),
             )?;
-            //  self.eye.draw(ctx)?;
-            self.tentacle.draw(ctx)?;
+            
+                self.eye.draw(ctx)?;
+            
+            self.eye.draw(ctx)?;
+            // self.tentacle.draw(ctx)?;
         }
         Ok(())
     }
@@ -159,4 +164,3 @@ impl Collidable for Collectible {
         self.bounding_box()
     }
 }
-
