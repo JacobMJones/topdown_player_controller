@@ -8,7 +8,7 @@ use ggez::{event, graphics, Context, GameResult};
 use gilrs::Gilrs;
 use rand::Rng;
 const COLLECTIBLE_SIZE: f32 = 140.0;
-const COLLECTIBLE_COUNT: i32 = 600;
+const COLLECTIBLE_COUNT: i32 = 1000;
 const CLUSTER_SIZE: f32 = 300.0;
 const PARTICLES_IN_SMOKE: i32 = 10;
 const PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD: f32 = 800.0;
