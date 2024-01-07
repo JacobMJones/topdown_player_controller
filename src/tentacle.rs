@@ -4,7 +4,7 @@ use ggez::{
 };
 use mint::Point2;
 use noise::{NoiseFn, Perlin};
-
+use nalgebra::{Vector2, Norm};
 pub struct Tentacle {
     pub base_position: Point2<f32>,
     pub thickness: f32,
@@ -12,7 +12,8 @@ pub struct Tentacle {
     pub noise: Perlin,
     pub time: f64,
     pub points: Vec<Point2<f32>>,
-    // Additional properties like noise scale, dynamic behavior, etc., can be added here.
+    pub in_proximity: bool,
+
 }
 
 impl Tentacle {
@@ -29,6 +30,7 @@ impl Tentacle {
             time: initial_time,
             noise: Perlin::new(),
             points: Vec::new(),
+            in_proximity: false,
         }
     }
 
@@ -40,44 +42,38 @@ impl Tentacle {
         normalized_distance: f32,
         t: f32,
         color: Color,
+        in_proximity: bool,
+        max_distance_threshold: f32,
     ) -> GameResult<()> {
-        self.time = t as f64; // Increment time for noise evolution
-                              // let modulated_time = self.time.cos() as f64;
-        self.points.clear();
-        // Calculate direction to the target
-        let to_target = Point2 {
-            x: target_position.x - self.base_position.x,
-            y: target_position.y - self.base_position.y,
-        };
+        self.in_proximity = in_proximity;
         self.color = color;
-        let distance_to_target = (to_target.x.powi(2) + to_target.y.powi(2)).sqrt();
+        self.time = t as f64; // time for noise evolution  // let modulated_time = self.time.cos() as f64;
+        self.points.clear();
+
+        let base_position = Vector2::new(self.base_position.x, self.base_position.y);
+        let target_position = Vector2::new(target_position.x, target_position.y);
+        let to_target = target_position - base_position;
+        let distance_to_target = to_target.norm(); 
+        //Distance and direction to target
+
 
         let direction = if distance_to_target != 0.0 {
-            Point2 {
-                x: to_target.x / distance_to_target,
-                y: to_target.y / distance_to_target,
-            }
+            to_target.normalize()  // normalize the vector
         } else {
-            to_target // If the target is exactly at the base position
+            Vector2::new(0.0, 0.0) // Or handle the zero distance case as you prefer
         };
-
-        // Calculate perpendicular direction for noise offset
-        let perp_direction = Point2 {
-            x: -direction.y,
-            y: direction.x,
-        };
-
-        // Calculate the tentacle's length with a minimum length for visibility
-        let min_tentacle_length = 2.0; // Minimum length can be the minimum for a visible line or more
-        let max_tentacle_length = distance_to_target;
         
+        // Calculate perpendicular direction for noise offset
+        let perp_direction = Vector2::new(-direction.y, direction.x);
+        // Tentacle length, thickness and points --- ISSUE, sometimes if the player moves away too quickly the tentacle remains
+        let min_tentacle_length = 2.0;
+        let max_tentacle_length =
+            distance_to_target.clamp(min_tentacle_length, max_distance_threshold);
         let tentacle_length = (normalized_distance * max_tentacle_length).max(min_tentacle_length);
 
-       // println!("ten len: {}, normal: {}, dist: {}, min_l: {}", tentacle_length, normalized_distance, distance_to_target, min_length);
-       
-        self.thickness = 20.0 * normalized_distance;
+        self.thickness = 10.0;
+
         // Generate points for the tentacle with noise
-        //  let mut points = Vec::new();
         for i in 0..=tentacle_length as usize {
             let along = i as f32 / tentacle_length; // Normalized position along tentacle
             let noise_value = self.noise.get([self.time + along as f64 * 2.0, 0.0]) as f32;
@@ -91,14 +87,6 @@ impl Tentacle {
             self.points.push(vertex);
         }
 
-        // // Build the tentacle mesh from the points
-        // let mesh = MeshBuilder::new()
-        //     .polyline(DrawMode::stroke(10.0), &points, self.color)?
-        //     .build(ctx)?;
-
-        // // Draw the tentacle mesh
-        // graphics::draw(ctx, &mesh, graphics::DrawParam::default())?;
-
         Ok(())
     }
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
@@ -107,15 +95,10 @@ impl Tentacle {
             .polyline(DrawMode::stroke(5.0), &self.points, self.color)?
             .build(ctx)?;
 
-        // Draw the tentacle mesh
-        graphics::draw(
-            ctx,
-            &tentacle_mesh,
-            graphics::DrawParam::default(),
-        )?;
+        graphics::draw(ctx, &tentacle_mesh, graphics::DrawParam::default())?;
         Ok(())
     }
-    // Methods to allow changing the tentacle's properties, such as color and thickness
+
     pub fn set_color(&mut self, new_color: Color) {
         self.color = new_color;
     }

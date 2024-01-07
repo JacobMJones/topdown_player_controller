@@ -10,8 +10,8 @@ pub fn get_dynamic_color(time: f32, normalized_distance: f32, in_proximity: bool
 
     // Define color constants with dynamic green component for YELLOW
     const RED: (f32, f32, f32) = (1.0, 0.0, 0.0); // Very Close
-    let yellow = (1.0, dynamic_green, 0.0); // Far, with dynamic green component
-    const BLUE: (f32, f32, f32) = (0.0, 0.0, 1.0); // Close
+    let yellow = (1.0, dynamic_green, 0.0); 
+    const BLUE: (f32, f32, f32) = (0.1, 0.1, 0.8); // Close
     const BLUE2: (f32, f32, f32) = (0.0, 0.0, 0.7); // Close
     // Calculate the color based on proximity
     let color = if !in_proximity {

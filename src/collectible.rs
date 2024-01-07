@@ -25,6 +25,7 @@ pub struct Collectible {
     pub eye: Eye,
     pub tentacle: Tentacle,
     pub color: Color,
+    pub max_distance_threshold: f32
 }
 
 impl Collectible {
@@ -68,6 +69,7 @@ impl Collectible {
             eye,
             tentacle: Tentacle::new(Point2 { x, y }, 5.0, Color::new(1.0, 0.5, 0.5, 0.0), 2.5),
             color,
+            max_distance_threshold
         })
     }
 
@@ -96,18 +98,20 @@ impl Collectible {
         )?;
 
         self.color = get_dynamic_color(self.time, self.normalized_distance, self.in_proximity);
-
-        // self.tentacle.update(
-        //     ctx,
-        //     player_position,
-        //     250.0,
-        //     self.normalized_distance,
-        //     self.time,
-        //     self.color,
-        // )?;
+      
+        self.tentacle.update(
+            ctx,
+            player_position,
+            250.0,
+            self.normalized_distance,
+            self.time,
+            self.color,
+            self.in_proximity,
+            self.max_distance_threshold
+        )?;
 
       
-            self.eye.update(player_position, self.position, self.distance_from_player, self.in_proximity);
+        //    self.eye.update(player_position, self.position, self.distance_from_player, self.in_proximity);
        
 
         Ok(())
@@ -123,10 +127,10 @@ impl Collectible {
                     .color(self.color),
             )?;
             
-                self.eye.draw(ctx)?;
+             
             
-            self.eye.draw(ctx)?;
-            // self.tentacle.draw(ctx)?;
+           // self.eye.draw(ctx)?;
+            self.tentacle.draw(ctx)?;
         }
         Ok(())
     }

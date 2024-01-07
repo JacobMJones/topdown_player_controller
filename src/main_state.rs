@@ -7,8 +7,8 @@ use crate::smoke_effect::SmokeEffect;
 use ggez::{event, graphics, Context, GameResult};
 use gilrs::Gilrs;
 use rand::Rng;
-const COLLECTIBLE_SIZE: f32 = 80.0;
-const COLLECTIBLE_COUNT: i32 = 200;
+const COLLECTIBLE_SIZE: f32 = 120.0;
+const COLLECTIBLE_COUNT: i32 = 400;
 const CLUSTER_SIZE: f32 = 300.0;
 const PARTICLES_IN_SMOKE: i32 = 10;
 const PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD: f32 = 800.0;
@@ -21,23 +21,33 @@ pub struct MainState {
 
 impl MainState {
     pub fn new(ctx: &mut Context, screen_width: f32, screen_height: f32) -> GameResult<MainState> {
-        let cluster_points: &[(f32, f32); 5] = &[
-            (screen_width * 0.15, screen_height * 0.16),
-            (screen_width * 0.12, screen_height * 0.3),
-            (screen_width * 0.2, screen_height * 0.5),
-            (screen_width * 0.3, screen_height * 0.2),
-            (screen_width * 0.4, screen_height * 0.8),
-        ];
+
         //gamepad
         let gilrs = Gilrs::new().unwrap();
         //gamepad events
         let event_handler = EventHandler::new(gilrs);
 
-        // Initialize multiple collectibles with random positions
+
+        ////////////////////////////////////////////////////////////
+        // Initialize multiple collectibles with random positions//
+        //////////////////////////////////////////////////////////
+        
+        let cluster_points: &[(f32, f32); 10] = &[
+        (screen_width * 0.15, screen_height * 0.16),
+        (screen_width * 0.12, screen_height * 0.3),
+        (screen_width * 0.2, screen_height * 0.5),
+        (screen_width * 0.3, screen_height * 0.2),
+        (screen_width * 0.4, screen_height * 0.8),
+        (screen_width * 0.4, screen_height * 0.16),
+        (screen_width * 0.5, screen_height * 0.3),
+        (screen_width * 0.6, screen_height * 0.5),
+        (screen_width * 0.7, screen_height * 0.2),
+        (screen_width * 0.8, screen_height * 0.8),
+    ];
         let mut collectibles = Vec::new();
         let mut rng = rand::thread_rng();
-
         for i in 0..COLLECTIBLE_COUNT {
+
             // Choose a random cluster point
             let (center_x, center_y) = cluster_points[rng.gen_range(0..cluster_points.len())];
 
@@ -65,6 +75,9 @@ impl MainState {
                 100.0,
             )?);
         }
+        //////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////
+
 
         //Initialize multiple smoke effects and put them into a pool
         let mut smoke_effect_pool = Vec::new();
@@ -143,6 +156,9 @@ impl event::EventHandler<ggez::GameError> for MainState {
 
         Ok(())
     }
+
+
+    
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         graphics::clear(ctx, graphics::Color::from_rgb(0, 0, 0));

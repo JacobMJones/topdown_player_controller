@@ -21,7 +21,8 @@ impl Eye {
     }
     // Draw the eye on the screen
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
-        if !self.in_proximity {
+
+        if self.distance_from_player < 600.0 && self.distance_from_player > 300.0{
             let circle_mesh = MeshBuilder::new()
                 .circle(
                     graphics::DrawMode::fill(),
@@ -63,7 +64,7 @@ impl Eye {
        // println!("distance from {} {}", distance_from_player, in_proximity);
         self.in_proximity = in_proximity;
         self.distance_from_player = distance_from_player;
-        if !in_proximity {
+       // if distance_from_player < 1000.0 && distance_from_player > 300.0 {
             let to_player = Vector2 {
                 x: player_position.x - collectible_center.x,
                 y: player_position.y - collectible_center.y,
@@ -92,7 +93,7 @@ impl Eye {
                 x: collectible_center.x + eye_offset.x,
                 y: collectible_center.y + eye_offset.y,
             };
-        }
+       // }
     }
 
     // Updates the scale (size) of the eye
