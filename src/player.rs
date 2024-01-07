@@ -7,7 +7,7 @@ pub const MOVEMENT_SPEED: f32 = 1000.0;
 pub const CIRCLE_SMOOTHNESS: f32 = 0.1;
 pub const MAX_CIRCLE_RADIUS: f32 = 50.0;
 pub const MIN_CIRCLE_RADIUS: f32 = 46.0;
-pub const CIRCLE_RADIUS: f32 = 45.0;
+pub const CIRCLE_RADIUS: f32 = 35.0;
 pub const PLAYER_START_X_POS: f32 = 900.0;
 pub const PLAYER_START_Y_POS: f32 = 900.0;
 pub const PLAYER_ACCELERATION: f32 = 800.0;
@@ -59,7 +59,7 @@ impl Player {
             x: self.axis_left.0 * self.speed * dt, 
             y: self.axis_left.1 * self.speed * dt 
         };
-        
+
         if self.speed > 0.0 {
             self.direction = mint::Vector2 {
                 x: self.axis_left.0,
@@ -115,7 +115,7 @@ impl Player {
             white.r + (yellow.r - white.r) * factor,
             white.g + (yellow.g - white.g) * factor,
             white.b + (yellow.b - white.b) * factor,
-            1.0, // Alpha value
+            0.1, // Alpha value
         )
     }
 
