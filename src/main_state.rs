@@ -2,7 +2,10 @@ use crate::collectible::Collectible;
 use crate::collidable::Collidable;
 use crate::event_handler::EventHandler;
 use crate::player::Player;
+use crate::collectible_placement;
 use crate::proximity_and_collision_handler::handle_proximity_and_collisions;
+
+
 use crate::smoke_effect::SmokeEffect;
 use ggez::{event, graphics, Context, GameResult};
 use gilrs::Gilrs;
@@ -27,60 +30,15 @@ impl MainState {
         //gamepad events
         let event_handler = EventHandler::new(gilrs);
 
-
-        ////////////////////////////////////////////////////////////
-        // Initialize multiple collectibles with random positions//
-        //////////////////////////////////////////////////////////
-        
-        let cluster_points: &[(f32, f32); 14] = &[
-        (screen_width * 0.07, screen_height * 0.5),
-        (screen_width * 0.15, screen_height * 0.53),
-        (screen_width * 0.2, screen_height * 0.58),
-        (screen_width * 0.3, screen_height * 0.6),
-        (screen_width * 0.4, screen_height * 0.65),
-        (screen_width * 0.44, screen_height * 0.7),
-        (screen_width * 0.5, screen_height * 0.74),
-        (screen_width * 0.6, screen_height * 0.75),
-        (screen_width * 0.65, screen_height * 0.8),
-        (screen_width * 0.7, screen_height * 0.84),
-        (screen_width * 0.75, screen_height * 0.88),
-        (screen_width * 0.8, screen_height * 0.9),
-        (screen_width * 0.85, screen_height * 0.92),
-        (screen_width * 0.9, screen_height * 0.98),
-    ];
-        let mut collectibles = Vec::new();
-        let mut rng = rand::thread_rng();
-        for i in 0..COLLECTIBLE_COUNT {
-
-            // Choose a random cluster point
-            let (center_x, center_y) = cluster_points[rng.gen_range(0..cluster_points.len())];
-
-            // Generate positions near the cluster point
-            let x = rng
-                .gen_range(center_x as f32 - CLUSTER_SIZE..=center_x as f32 + CLUSTER_SIZE)
-                .clamp(50.0, 2000.0);
-            let y = rng
-                .gen_range(center_y as f32 - CLUSTER_SIZE..=center_y as f32 + CLUSTER_SIZE)
-                .clamp(50.0, 2000.0);
-
-            //adds randomness to shapeshifting startpoint
-            let initial_time = rng.gen_range(0.0..6.28);
-
-            let id = format!("collect{}", i);
-            collectibles.push(Collectible::new(
-                ctx,
-                x,
-                y,
-                COLLECTIBLE_SIZE,
-                PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD,
-                initial_time,
-                id,
-                false,
-                100.0,
-            )?);
-        }
-        //////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////
+        let collectibles = collectible_placement::generate_collectibles(
+            ctx,
+            screen_width,
+            screen_height,
+            COLLECTIBLE_COUNT,
+            CLUSTER_SIZE,
+            PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD,
+            COLLECTIBLE_SIZE,
+        )?;
 
 
         //Initialize multiple smoke effects and put them into a pool
