@@ -8,6 +8,7 @@ mod event_handler;
 mod collidable;
 mod tentacle;
 mod eye;
+mod heart_mesh;
 mod utils;
 use ggez::{conf, event, ContextBuilder};
 use main_state::MainState;

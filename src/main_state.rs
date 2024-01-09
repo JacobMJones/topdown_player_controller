@@ -7,9 +7,9 @@ use crate::smoke_effect::SmokeEffect;
 use ggez::{event, graphics, Context, GameResult};
 use gilrs::Gilrs;
 use rand::Rng;
-const COLLECTIBLE_SIZE: f32 = 120.0;
-const COLLECTIBLE_COUNT: i32 = 400;
-const CLUSTER_SIZE: f32 = 300.0;
+const COLLECTIBLE_SIZE: f32 = 140.0;
+const COLLECTIBLE_COUNT: i32 = 800;
+const CLUSTER_SIZE: f32 = 200.0;
 const PARTICLES_IN_SMOKE: i32 = 10;
 const PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD: f32 = 800.0;
 pub struct MainState {
@@ -32,17 +32,21 @@ impl MainState {
         // Initialize multiple collectibles with random positions//
         //////////////////////////////////////////////////////////
         
-        let cluster_points: &[(f32, f32); 10] = &[
-        (screen_width * 0.15, screen_height * 0.16),
-        (screen_width * 0.12, screen_height * 0.3),
-        (screen_width * 0.2, screen_height * 0.5),
-        (screen_width * 0.3, screen_height * 0.2),
-        (screen_width * 0.4, screen_height * 0.8),
-        (screen_width * 0.4, screen_height * 0.16),
-        (screen_width * 0.5, screen_height * 0.3),
-        (screen_width * 0.6, screen_height * 0.5),
-        (screen_width * 0.7, screen_height * 0.2),
-        (screen_width * 0.8, screen_height * 0.8),
+        let cluster_points: &[(f32, f32); 14] = &[
+        (screen_width * 0.07, screen_height * 0.5),
+        (screen_width * 0.15, screen_height * 0.53),
+        (screen_width * 0.2, screen_height * 0.58),
+        (screen_width * 0.3, screen_height * 0.6),
+        (screen_width * 0.4, screen_height * 0.65),
+        (screen_width * 0.44, screen_height * 0.7),
+        (screen_width * 0.5, screen_height * 0.74),
+        (screen_width * 0.6, screen_height * 0.75),
+        (screen_width * 0.65, screen_height * 0.8),
+        (screen_width * 0.7, screen_height * 0.84),
+        (screen_width * 0.75, screen_height * 0.88),
+        (screen_width * 0.8, screen_height * 0.9),
+        (screen_width * 0.85, screen_height * 0.92),
+        (screen_width * 0.9, screen_height * 0.98),
     ];
         let mut collectibles = Vec::new();
         let mut rng = rand::thread_rng();

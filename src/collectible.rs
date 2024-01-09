@@ -1,6 +1,7 @@
 use crate::amorphous_mesh_creator;
 use crate::collidable::Collidable;
 use crate::eye::Eye;
+use crate::heart_mesh;
 use crate::smoke_effect::SmokeEffect;
 use crate::tentacle::Tentacle;
 use crate::utils::get_dynamic_color;
@@ -20,12 +21,13 @@ pub struct Collectible {
     pub distance_from_player: f32,
     pub normalized_distance: f32,
     mesh: Mesh,
+    pub heart_mesh: Mesh,
     noise: Perlin,
     pub player_direction: mint::Vector2<f32>,
     pub eye: Eye,
     pub tentacle: Tentacle,
     pub color: Color,
-    pub max_distance_threshold: f32
+    pub max_distance_threshold: f32,
 }
 
 impl Collectible {
@@ -41,6 +43,8 @@ impl Collectible {
         distance_from_player: f32,
     ) -> GameResult<Self> {
         let eye = Eye::new(x, y, size / 10.0);
+        let heart_mesh = heart_mesh::create_heart_mesh(ctx, size/2.0, Color::new(1.0, 0.0, 0.0, 1.0))?;
+
         let noise = Perlin::new();
         let color: Color = Color::new(1.0, 0.0, 0.0, 1.0);
         let normalized_distance_from_player = 0.01;
@@ -61,15 +65,16 @@ impl Collectible {
             time: initial_time,
             id,
             in_proximity: false,
-            distance_from_player,
+            distance_from_player: 1000.0,
             normalized_distance: normalized_distance_from_player,
             mesh,
+            heart_mesh,
             noise,
             player_direction: Vector2 { x: 0.0, y: 0.0 },
             eye,
             tentacle: Tentacle::new(Point2 { x, y }, 5.0, Color::new(1.0, 0.5, 0.5, 0.0), 2.5),
             color,
-            max_distance_threshold
+            max_distance_threshold,
         })
     }
 
@@ -98,39 +103,46 @@ impl Collectible {
         )?;
 
         self.color = get_dynamic_color(self.time, self.normalized_distance, self.in_proximity);
-      
-        self.tentacle.update(
-            ctx,
-            player_position,
-            250.0,
-            self.normalized_distance,
-            self.time,
-            self.color,
-            self.in_proximity,
-            self.max_distance_threshold
-        )?;
 
-      
-        //    self.eye.update(player_position, self.position, self.distance_from_player, self.in_proximity);
-       
+        // self.tentacle.update(
+        //     ctx,
+        //     player_position,
+        //     250.0,
+        //     self.normalized_distance,
+        //     self.time,
+        //     self.color,
+        //     self.in_proximity,
+        //     self.max_distance_threshold,
+        // )?;
+
+          self.eye.update(player_position, self.position, self.distance_from_player, self.in_proximity);
 
         Ok(())
     }
     pub fn draw(&self, ctx: &mut Context, player_position: mint::Point2<f32>) -> GameResult<()> {
         if self.active {
-            graphics::draw(
-                ctx,
-                &self.mesh,
-                graphics::DrawParam::default()
-                    .dest([self.position.x, self.position.y])
-                    .scale([self.size / self.size, self.size / self.size])
-                    .color(self.color),
-            )?;
-            
-             
-            
-           // self.eye.draw(ctx)?;
-            self.tentacle.draw(ctx)?;
+            if self.distance_from_player < 200.0 {
+                graphics::draw(
+                    ctx,
+                    &self.heart_mesh,
+                    graphics::DrawParam::default()
+                        .dest([self.position.x, self.position.y])
+                        .scale([self.size / self.size, self.size / self.size])
+                        .color(self.color),
+                )?;
+            } else {
+                graphics::draw(
+                    ctx,
+                    &self.mesh,
+                    graphics::DrawParam::default()
+                        .dest([self.position.x, self.position.y])
+                        .scale([self.size / self.size, self.size / self.size])
+                        .color(self.color),
+                )?;
+            }
+
+             self.eye.draw(ctx)?;
+            //self.tentacle.draw(ctx)?;
         }
         Ok(())
     }
