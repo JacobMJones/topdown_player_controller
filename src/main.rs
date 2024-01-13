@@ -2,7 +2,7 @@ mod player;
 mod main_state;
 mod collectible;
 mod collectible_placement;
-
+mod button;
 mod collectible_cluster_points;
 mod smoke_effect;
 mod amorphous_mesh_creator;
@@ -12,6 +12,7 @@ mod collidable;
 mod tentacle;
 mod eye;
 mod heart_mesh;
+
 mod utils;
 use ggez::{conf, event, ContextBuilder};
 use main_state::MainState;

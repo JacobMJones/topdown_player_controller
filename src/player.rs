@@ -14,6 +14,7 @@ pub const PLAYER_ACCELERATION: f32 = 800.0;
 
 pub struct Player {
     pub position: mint::Point2<f32>,
+    pub default_position: mint::Point2<f32>, 
     pub rotation: f32,
     pub axis_left: (f32, f32),
     pub axis_right: (f32, f32),
@@ -25,9 +26,10 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new() -> Self {
+    pub fn new(default_position: mint::Point2<f32>) -> Self {
         Player {
-            position: mint::Point2 { x: PLAYER_START_X_POS, y: PLAYER_START_Y_POS },
+            position: default_position,
+            default_position,
             rotation: 0.0,
             axis_left: (0.0, 0.0),
             axis_right: (0.0, 0.0),
