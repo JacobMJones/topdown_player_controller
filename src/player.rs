@@ -8,8 +8,8 @@ pub const CIRCLE_SMOOTHNESS: f32 = 0.1;
 pub const MAX_CIRCLE_RADIUS: f32 = 50.0;
 pub const MIN_CIRCLE_RADIUS: f32 = 46.0;
 pub const CIRCLE_RADIUS: f32 = 35.0;
-pub const PLAYER_START_X_POS: f32 = 900.0;
-pub const PLAYER_START_Y_POS: f32 = 900.0;
+pub const PLAYER_START_X_POS: f32 = 200.0;
+pub const PLAYER_START_Y_POS: f32 = 200.0;
 pub const PLAYER_ACCELERATION: f32 = 800.0;
 
 pub struct Player {

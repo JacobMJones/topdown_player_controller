@@ -36,9 +36,9 @@ impl Tentacle {
 
     pub fn update(
         &mut self,
-        ctx: &mut Context,
+        _ctx: &mut Context,
         target_position: Point2<f32>,
-        max_length: f32,
+        _max_length: f32,
         normalized_distance: f32,
         t: f32,
         color: Color,
@@ -67,8 +67,8 @@ impl Tentacle {
         let perp_direction = Vector2::new(-direction.y, direction.x);
         // Tentacle length, thickness and points --- ISSUE, sometimes if the player moves away too quickly the tentacle remains
         let min_tentacle_length = 2.0;
-        let max_tentacle_length =
-            distance_to_target.clamp(min_tentacle_length, max_distance_threshold);
+        let max_tentacle_length = 
+            distance_to_target.clamp(min_tentacle_length, max_distance_threshold) * 1.2;
         let tentacle_length = (normalized_distance * max_tentacle_length).max(min_tentacle_length);
 
         self.thickness = 10.0;
@@ -92,7 +92,7 @@ impl Tentacle {
     pub fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         // Build the tentacle mesh from the points
         let tentacle_mesh = MeshBuilder::new()
-            .polyline(DrawMode::stroke(5.0), &self.points, self.color)?
+            .polyline(DrawMode::stroke(self.thickness), &self.points, self.color)?
             .build(ctx)?;
 
         graphics::draw(ctx, &tentacle_mesh, graphics::DrawParam::default())?;

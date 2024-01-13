@@ -1,17 +1,15 @@
 use crate::collectible::Collectible;
+use crate::collectible_placement;
 use crate::collidable::Collidable;
 use crate::event_handler::EventHandler;
 use crate::player::Player;
-use crate::collectible_placement;
 use crate::proximity_and_collision_handler::handle_proximity_and_collisions;
-
-
 use crate::smoke_effect::SmokeEffect;
 use ggez::{event, graphics, Context, GameResult};
 use gilrs::Gilrs;
 use rand::Rng;
-const COLLECTIBLE_SIZE: f32 = 140.0;
-const COLLECTIBLE_COUNT: i32 = 800;
+const COLLECTIBLE_SIZE: f32 = 200.0;
+const COLLECTIBLE_COUNT: i32 = 100;
 const CLUSTER_SIZE: f32 = 200.0;
 const PARTICLES_IN_SMOKE: i32 = 10;
 const PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD: f32 = 800.0;
@@ -24,7 +22,6 @@ pub struct MainState {
 
 impl MainState {
     pub fn new(ctx: &mut Context, screen_width: f32, screen_height: f32) -> GameResult<MainState> {
-
         //gamepad
         let gilrs = Gilrs::new().unwrap();
         //gamepad events
@@ -40,7 +37,6 @@ impl MainState {
             COLLECTIBLE_SIZE,
         )?;
 
-
         //Initialize multiple smoke effects and put them into a pool
         let mut smoke_effect_pool = Vec::new();
         for _ in 0..PARTICLES_IN_SMOKE {
@@ -48,12 +44,32 @@ impl MainState {
         }
 
         let player = Player::new();
+
         Ok(MainState {
             event_handler,
             player,
             collectibles,
             smoke_effect_pool,
         })
+    }
+
+    fn handle_collectible_proximity(&mut self, collectible_index: usize, distance: f32) {
+        if let Some(collectible) = self.collectibles.get_mut(collectible_index) {
+            let in_proximity = distance < PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD / 2.0;
+            collectible.set_in_proximity(
+                in_proximity,
+                distance,
+                PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD,
+            );
+        }
+    }
+
+    fn handle_collectible_collision(
+        &mut self,
+        collectible_index: usize,
+        to_remove: &mut Vec<usize>,
+    ) {
+        to_remove.push(collectible_index);
     }
 }
 
@@ -78,23 +94,9 @@ impl event::EventHandler<ggez::GameError> for MainState {
         let mut to_remove = Vec::new();
 
         for (_player_index, collectible_index, distance, is_collided) in proximity_and_collisions {
-            if distance < PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD / 2.0 {
-                // Assuming collectible_index is the index of the collectible in the collectibles vector
-                if let Some(collectible) = self.collectibles.get_mut(collectible_index) {
-                    collectible.update_distance(distance, PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD);
-                    collectible.set_in_proximity(true, distance, PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD);
-                }
-            } else {
-                // If the collectible is not in proximity, reset its in_proximity variable
-                if let Some(collectible) = self.collectibles.get_mut(collectible_index) {
-               //     collectible.update_distance(distance, PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD);
-                    collectible.set_in_proximity(false, distance, PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD);
-                }
-            }
-
+            self.handle_collectible_proximity(collectible_index, distance);
             if is_collided {
-                // Mark collided collectibles for removal
-                to_remove.push(collectible_index);
+                self.handle_collectible_collision(collectible_index, &mut to_remove);
             }
         }
         // Remove the collectibles that collided with the player
@@ -118,9 +120,6 @@ impl event::EventHandler<ggez::GameError> for MainState {
 
         Ok(())
     }
-
-
-    
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         graphics::clear(ctx, graphics::Color::from_rgb(0, 0, 0));
