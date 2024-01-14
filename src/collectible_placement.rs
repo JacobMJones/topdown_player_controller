@@ -22,9 +22,10 @@ pub fn generate_collectibles(
     );
 
     for i in 0..collectible_count {
+
         let mut position_ok = false;
         let mut failure_count = 0; 
-     //   println!("in for loop");
+   
         // Add randomness to the shapeshifting start point
         let initial_time = rng.gen_range(0.0..6.28);
         let id = format!("collect{}", i);
@@ -45,7 +46,7 @@ pub fn generate_collectibles(
                 let distance = ((existing_collectible.position.x - x).powi(2)
                     + (existing_collectible.position.y - y).powi(2))
                 .sqrt();
-                if distance < 20.0 {
+                if distance < 3.0 {
                    
                     position_ok = false;
                     failure_count += 1;
@@ -58,6 +59,7 @@ pub fn generate_collectibles(
                 return Err(ggez::GameError::CustomError("Failed to place collectible".to_string()));
             }
             if position_ok {
+                
                 failure_count = 0;
                 let collectible = Collectible::new(
                     ctx,
@@ -70,17 +72,18 @@ pub fn generate_collectibles(
                     false,   // Assuming some default values
                     10000.0, // Assuming some default value for score or similar
                 )?;
+
+
+
+
                 collectibles.push(collectible);
             }
+
         }
-        // Choose a random cluster point
 
-        // Generate positions near the cluster point
-
-        // Create a new collectible
-
-        // Push the newly created collectible to the vector
     }
-
+    // for i in 0..collectibles.len() {
+    //     println!("{:?}", collectibles[i]);
+    // }
     Ok(collectibles)
 }

@@ -39,7 +39,7 @@ impl Collectibles {
             max_distance_threshold,
             collectible_size,
         )?;
-
+        
         Ok(Collectibles {
             items,
             collectible_count,
@@ -84,6 +84,8 @@ impl Collectibles {
     }
 
     pub fn update(&mut self, ctx: &mut Context, dt: f32, player_position: Point2<f32>, player: &Player) {
+       
+       
         let player_collidable: &dyn Collidable = player;
 
         let proximity_and_collisions = handle_proximity_and_collisions(
@@ -95,6 +97,7 @@ impl Collectibles {
         let mut to_remove = Vec::new();
 
         for (_player_index, collectible_index, distance, is_collided) in proximity_and_collisions {
+            
             self.handle_collectible_proximity(collectible_index, distance);
             if is_collided {
                 self.handle_collectible_collision(collectible_index, &mut to_remove);
@@ -109,8 +112,12 @@ impl Collectibles {
         }
 
         for collectible in &mut self.items {
+           
             collectible.player_direction = player.direction;
+            
             collectible.update(ctx, dt, player_position);
+            collectible.draw(ctx, player_position);
+            
         }
 
         // Update all smoke effects in the pool
@@ -140,10 +147,11 @@ impl Collectibles {
 
     pub fn draw(&self, ctx: &mut Context, player_position: mint::Point2<f32>) -> GameResult<()> {
         for collectible in &self.items {
+            println!("im alive! {}", self.items.len());
             collectible.draw(ctx, player_position)?;
         }
         Ok(())
     }
 
-    // Additional methods can be added as needed
+  
 }

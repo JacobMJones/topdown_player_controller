@@ -1,6 +1,7 @@
 use ggez::graphics::{Color, MeshBuilder};
 use ggez::{graphics, Context, GameResult};
 use mint::{Point2, Vector2};
+#[derive(Debug)]
 pub struct Eye {
     position: Point2<f32>,
     scale: f32,

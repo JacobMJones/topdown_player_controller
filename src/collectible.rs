@@ -1,3 +1,5 @@
+use std::f32::INFINITY;
+
 use crate::amorphous_mesh_creator;
 use crate::collidable::Collidable;
 use crate::eye::Eye;
@@ -10,6 +12,7 @@ use ggez::{Context, GameResult};
 use mint::{Point2, Vector2};
 
 use noise::Perlin;
+#[derive(Debug)]
 pub struct Collectible {
     pub position: Point2<f32>,
     pub size: f32,
@@ -56,7 +59,7 @@ impl Collectible {
             in_proximity,
             normalized_distance_from_player,
         )?;
-
+        // println!("im alive! {}", id);
         Ok(Collectible {
             position: Point2 { x, y },
             size,
@@ -65,7 +68,7 @@ impl Collectible {
             time: initial_time,
             id,
             in_proximity: false,
-            distance_from_player: 1000.0,
+            distance_from_player: 10000.0,
             normalized_distance: normalized_distance_from_player,
             mesh,
             heart_mesh,
@@ -76,23 +79,38 @@ impl Collectible {
             color,
             max_distance_threshold,
         })
+       
     }
 
     pub fn update_distance(&mut self, distance: f32, max_distance_threshold: f32) {
         self.distance_from_player = distance;
-        let clamped_distance = distance.clamp(10.0, max_distance_threshold);
+        let clamped_distance = distance.clamp(2.0, max_distance_threshold);
         self.normalized_distance =
-            1.0 - (clamped_distance - 10.0) / (max_distance_threshold - 10.0);
+            1.0 - (clamped_distance - 50.0) / (max_distance_threshold - 50.0);
     }
-
+    pub fn calculate_distance(point1: Point2<f32>, point2: Point2<f32>) -> f32 {
+        let dx = point2.x - point1.x;
+        let dy = point2.y - point1.y;
+        f32::sqrt(dx * dx + dy * dy)
+    }
     pub fn update(
         &mut self,
         ctx: &mut Context,
         dt: f32,
-        player_position: mint::Point2<f32>,
+        player_position: mint::Point2<f32>
+       
     ) -> GameResult<()> {
+        pub fn calculate_distance(point1: Point2<f32>, point2: Point2<f32>) -> f32 {
+            let dx = point2.x - point1.x;
+            let dy = point2.y - point1.y;
+            f32::sqrt(dx * dx + dy * dy)
+        }
         self.time += dt;
-
+        self.distance_from_player = calculate_distance(self.position , player_position);
+        // println!("distance {}", self.distance_from_player);
+        let clamped_distance = self.distance_from_player.clamp(2.0, self.max_distance_threshold);
+        self.normalized_distance =
+            1.0 - (clamped_distance - 50.0) / (self.max_distance_threshold - 50.0);
         self.mesh = amorphous_mesh_creator::create_amorphous_mesh(
             ctx,
             self.size,
@@ -120,7 +138,9 @@ impl Collectible {
         Ok(())
     }
     pub fn draw(&self, ctx: &mut Context, player_position: mint::Point2<f32>) -> GameResult<()> {
+        
         if self.active {
+       
             if self.distance_from_player < 200.0 {
                 graphics::draw(
                     ctx,
@@ -131,6 +151,7 @@ impl Collectible {
                         .color(self.color),
                 )?;
             } else {
+                println!("draw {}", self.id);
                 graphics::draw(
                     ctx,
                     &self.mesh,

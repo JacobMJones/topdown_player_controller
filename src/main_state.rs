@@ -8,8 +8,8 @@ use gilrs::Gilrs;
 use mint::{Point2, Vector2};
 use rand::Rng;
 const COLLECTIBLE_SIZE: f32 = 100.0;
-const COLLECTIBLE_COUNT: i32 = 100;
-const CLUSTER_SIZE: f32 = 200.0;
+const COLLECTIBLE_COUNT: i32 = 2;
+const CLUSTER_SIZE: f32 = 300.0;
 const PARTICLES_IN_SMOKE: i32 = 10;
 const PLAYER_TO_COLLECTIBLE_PROXIMITY_THRESHOLD: f32 = 800.0;
 pub const PLAYER_POSITION_X: f32 = 100.0;
@@ -132,7 +132,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
         graphics::clear(ctx, graphics::Color::from_rgb(0, 0, 0));
 
    
-        self.collectibles.draw(ctx, self.player.position);
+      
 
         // Draw each active smoke effect
         for effect in &self.smoke_effect_pool {
@@ -142,7 +142,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
         }
         // Draw the player
         self.player.draw(ctx)?;
-
+        self.collectibles.draw(ctx, self.player.position);
         //Draw UI
         self.restart_button.draw(ctx)?;
         graphics::present(ctx)
