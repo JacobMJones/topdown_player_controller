@@ -115,7 +115,7 @@ impl Collectible {
             self.max_distance_threshold,
         )?;
 
-      //    self.eye.update(player_position, self.position, self.distance_from_player, self.in_proximity);
+         self.eye.update(player_position, self.position, self.distance_from_player, self.in_proximity);
 
         Ok(())
     }

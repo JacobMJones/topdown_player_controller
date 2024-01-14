@@ -24,7 +24,7 @@ pub fn generate_collectibles(
     for i in 0..collectible_count {
         let mut position_ok = false;
         let mut failure_count = 0; 
-        println!("in for loop");
+     //   println!("in for loop");
         // Add randomness to the shapeshifting start point
         let initial_time = rng.gen_range(0.0..6.28);
         let id = format!("collect{}", i);

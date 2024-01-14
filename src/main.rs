@@ -12,7 +12,7 @@ mod collidable;
 mod tentacle;
 mod eye;
 mod heart_mesh;
-
+mod collectibles;
 mod utils;
 use ggez::{conf, event, ContextBuilder};
 use main_state::MainState;
